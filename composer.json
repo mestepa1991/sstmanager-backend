@@ -1,0 +1,17 @@
+{
+    "name": "migue/sstmanager-backend",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "miguel"
+        }
+    ],
+    "require": {
+        "zircote/swagger-php": "^5.7",
+        "doctrine/annotations": "^2.0"
+    }
+}

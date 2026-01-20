@@ -1,0 +1,708 @@
+openapi: 3.0.0
+info:
+  title: 'SSTManager API'
+  description: 'Documentación oficial del sistema SSTManager'
+  version: 1.0.0
+servers:
+  -
+    url: /sstmanager-backend/public
+    description: 'Servidor Local'
+paths:
+  '/index.php?table=empresas':
+    get:
+      tags:
+        - Empresas
+      summary: 'Listar todas las empresas con su plan actual'
+      operationId: 8e48b17b1a6dcc83d211392362031114
+      responses:
+        '200':
+          description: 'Lista de clientes'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Empresa'
+    post:
+      tags:
+        - Empresas
+      summary: 'Registrar nueva empresa'
+      operationId: 4ff4b15877081cf3d3feb063e883c2b7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nombre_empresa
+                - nit
+                - id_plan
+              properties:
+                nombre_empresa:
+                  type: string
+                  example: 'Empresa Ejemplo S.A.S'
+                nit:
+                  type: string
+                  example: 900123456-7
+                id_plan:
+                  type: integer
+                  example: 1
+                email_contacto:
+                  type: string
+                  example: admin@empresa.com
+                telefono:
+                  type: string
+                  example: '3001234567'
+                direccion:
+                  type: string
+                  example: 'Calle 123 # 45-67'
+              type: object
+      responses:
+        '201':
+          description: 'Empresa creada'
+  '/index.php?table=empresas&id={id}':
+    get:
+      tags:
+        - Empresas
+      summary: 'Obtener detalle de una empresa por ID'
+      operationId: 9aba002fe075021f84d3ff90e67debf9
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Detalle de la empresa'
+    put:
+      tags:
+        - Empresas
+      summary: 'Reemplazar datos de la empresa (Actualización Completa)'
+      operationId: 78bb3b5f8a6a244fef0765b226259981
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nombre_empresa
+                - nit
+                - id_plan
+              properties:
+                nombre_empresa:
+                  type: string
+                nit:
+                  type: string
+                id_plan:
+                  type: integer
+                email_contacto:
+                  type: string
+                telefono:
+                  type: string
+                direccion:
+                  type: string
+                logo_url:
+                  type: string
+                estado:
+                  type: integer
+                  example: 1
+              type: object
+      responses:
+        '200':
+          description: Actualizado
+    delete:
+      tags:
+        - Empresas
+      summary: 'Suspender empresa (Soft Delete)'
+      operationId: 49bee8aa87de10d79d993660043fb7d6
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Inactivada
+    patch:
+      tags:
+        - Empresas
+      summary: 'Actualización parcial de empresa'
+      operationId: 0dbd0eabe1b25687029260c344dda492
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre_empresa:
+                  type: string
+                id_plan:
+                  type: integer
+                estado:
+                  type: integer
+              type: object
+      responses:
+        '200':
+          description: 'Campo actualizado'
+  '/index.php?table=modulos':
+    get:
+      tags:
+        - Módulos
+      summary: 'Listar módulos'
+      description: 'Por defecto trae solo los activos. Usa ?todos=true para ver el historial completo (incluyendo eliminados).'
+      operationId: 61d4f7596245c268e43cf8c75cb716c7
+      parameters:
+        -
+          name: todos
+          in: query
+          description: 'Enviar ''true'' para ver inactivos también'
+          required: false
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+      responses:
+        '200':
+          description: 'Lista de módulos'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Modulo'
+    post:
+      tags:
+        - Módulos
+      summary: 'Crear módulo'
+      operationId: c080534385893724137aed80d77da082
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nombre_modulo
+              properties:
+                nombre_modulo:
+                  type: string
+                  example: Inventarios
+                descripcion:
+                  type: string
+                  example: 'Control de stock'
+                icono:
+                  type: string
+                  example: 'fas fa-box'
+              type: object
+      responses:
+        '201':
+          description: Creado
+        '409':
+          description: Duplicado
+  '/index.php?table=modulos&id={id}':
+    put:
+      tags:
+        - Módulos
+      summary: 'Actualizar módulo'
+      operationId: 38e4454982be02c82aa85bd24d08669f
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre_modulo:
+                  type: string
+                descripcion:
+                  type: string
+                estado:
+                  description: '1 para activar, 0 para desactivar'
+                  type: integer
+              type: object
+      responses:
+        '200':
+          description: Actualizado
+    delete:
+      tags:
+        - Módulos
+      summary: 'Desactivar módulo (Soft Delete)'
+      description: 'No elimina el registro. Cambia estado a 0 para mantener trazabilidad.'
+      operationId: c1e6de2cc00b615bf7237316ea4e0e45
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Desactivado correctamente'
+  '/index.php?table=perfiles':
+    get:
+      tags:
+        - Perfiles
+      summary: 'Listar perfiles (Filtro Multi-empresa)'
+      description: 'Trae los perfiles de la empresa actual + los perfiles Master globales.'
+      operationId: d47d6e078c5f06eafa609228141be117
+      parameters:
+        -
+          name: id_empresa
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Lista filtrada'
+    post:
+      tags:
+        - Perfiles
+      summary: 'Crear perfil asignado a empresa'
+      operationId: c943c35c78e2d6b91f4bf851110d6074
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre_perfil:
+                  type: string
+                  example: 'Supervisor Local'
+                id_empresa:
+                  type: integer
+                  example: 1
+              type: object
+      responses:
+        '201':
+          description: Creado
+  '/index.php?table=perfiles&action=matriz':
+    get:
+      tags:
+        - Perfiles
+      summary: 'Obtener matriz global de permisos filtrada'
+      operationId: fa823e9b7e25117350106decee72b92e
+      parameters:
+        -
+          name: id_empresa
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Matriz de seguridad'
+  '/index.php?table=perfiles&id={id}':
+    put:
+      tags:
+        - Perfiles
+      summary: 'Actualizar perfil y su matriz de permisos'
+      operationId: ba30ff635256cda024a256cd1c10ce64
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre_perfil:
+                  type: string
+                  example: 'Supervisor SST'
+                descripcion:
+                  type: string
+                permisos:
+                  type: array
+                  items: { properties: { id_modulo: { type: integer }, ver: { type: boolean }, crear: { type: boolean }, editar: { type: boolean }, eliminar: { type: boolean } }, type: object }
+              type: object
+      responses:
+        '200':
+          description: 'Perfil actualizado exitosamente'
+    delete:
+      tags:
+        - Perfiles
+      summary: 'Desactivar perfil (Borrado Lógico)'
+      description: 'Cambia el estado del perfil a 0 para mantener la integridad histórica.'
+      operationId: 2c9c551c57e92f314a581d01d6089294
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Perfil desactivado'
+  '/index.php?table=planes':
+    get:
+      tags:
+        - Planes
+      summary: 'Listar todos los planes con sus módulos permitidos'
+      operationId: 8ab97c01d97442900cad1d1614d6c411
+      responses:
+        '200':
+          description: 'Lista de planes comerciales'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+    post:
+      tags:
+        - Planes
+      summary: 'Crear un nuevo plan comercial'
+      operationId: 597a6c565871a95458ec8b4d33bff58e
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nombre_plan
+                - modulos
+              properties:
+                nombre_plan:
+                  type: string
+                  example: 'Plan Pro'
+                descripcion:
+                  type: string
+                  example: 'Acceso a módulos avanzados'
+                limite_usuarios:
+                  type: integer
+                  example: 20
+                precio_mensual:
+                  type: number
+                  example: 59.9
+                modulos:
+                  type: array
+                  items: { type: integer }
+                  example: [1, 2, 3]
+              type: object
+      responses:
+        '201':
+          description: 'Plan creado'
+  '/index.php?table=planes&id={id}':
+    get:
+      tags:
+        - Planes
+      summary: 'Obtener detalle de un plan específico'
+      operationId: bd7865831ec4bdcaaea436b0a6ea9e57
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Detalle del plan'
+    put:
+      tags:
+        - Planes
+      summary: 'Actualización total del plan'
+      operationId: 2d3a048bd13be7d123bc3174191f42a6
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Plan'
+      responses:
+        '200':
+          description: 'Plan actualizado'
+    delete:
+      tags:
+        - Planes
+      summary: 'Desactivar plan (con validación de uso)'
+      operationId: 3a1e0c0da7e6235e1e3d8eff3675b417
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Desactivado
+    patch:
+      tags:
+        - Planes
+      summary: 'Actualización parcial del plan'
+      operationId: 51fe7efb7c2902f11e72660e46495bd1
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Actualizado
+  '/index.php?table=usuarios':
+    get:
+      tags:
+        - Usuarios
+      summary: 'Listar usuarios con filtros de empresa'
+      operationId: f98178c21d4e9e676798b8c445ebd08e
+      parameters:
+        -
+          name: id_empresa
+          in: query
+          description: 'Filtrar por empresa (opcional para Master)'
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Lista de usuarios'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+    post:
+      tags:
+        - Usuarios
+      summary: 'Crear usuario'
+      operationId: 96c727d02a352e221c245a3430cfc3c7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '201':
+          description: Creado
+  '/index.php?table=usuarios&id={id}':
+    get:
+      tags:
+        - Usuarios
+      summary: 'Obtener un usuario por ID'
+      operationId: e6fe7eaba59ce6b15b5b8b83b33daad4
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Datos del usuario'
+    put:
+      tags:
+        - Usuarios
+      summary: 'Reemplazar usuario (Actualización Completa)'
+      operationId: c69349d1a423980f15bfec6fd8b10415
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '200':
+          description: 'Usuario reemplazado correctamente'
+    delete:
+      tags:
+        - Usuarios
+      summary: 'Inactivar Usuario'
+      operationId: e4755b8d3ea3a46193fe98cf696a76e2
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Estado cambiado a inactivo'
+    patch:
+      tags:
+        - Usuarios
+      summary: 'Actualización Parcial (Solo campos enviados)'
+      description: 'Envía solo los campos que deseas modificar, por ejemplo: {''estado'': 0} o {''id_perfil'': 2}'
+      operationId: 1aae2fd58bd6d4634240ecb3956b799e
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre:
+                  type: string
+                id_perfil:
+                  type: integer
+                estado:
+                  type: integer
+              type: object
+      responses:
+        '200':
+          description: 'Campo actualizado'
+components:
+  schemas:
+    Empresa:
+      title: 'Empresa Cliente (Tenant)'
+    Modulo:
+      title: 'Módulo del Sistema'
+      description: 'Esquema para la gestión de módulos y permisos'
+      properties:
+        id_modulo:
+          type: integer
+          example: 1
+        nombre_modulo:
+          type: string
+          example: Usuarios
+        descripcion:
+          type: string
+          example: 'Gestión de acceso'
+        estado:
+          description: '1: Activo, 0: Inactivo'
+          type: integer
+          example: 1
+      type: object
+    Perfil:
+      title: 'Perfil de Usuario'
+      properties:
+        id_perfil:
+          type: integer
+          example: 1
+        nombre_perfil:
+          type: string
+          example: 'Administrador de Empresa'
+        id_empresa:
+          description: 'NULL para globales, ID para locales'
+          type: integer
+          nullable: true
+      type: object
+    Plan:
+      title: 'Plan de Suscripción'
+      description: 'Define los límites comerciales y módulos permitidos para una empresa'
+    Usuario:
+      title: 'Modelo de Usuario'
+      description: 'Esquema que representa a un usuario dentro del ecosistema Multi-tenant'
+      required:
+        - nombre
+        - apellido
+        - tipo_documento
+        - numero_documento
+        - rol
+        - id_perfil
+      properties:
+        id_usuario:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: Pérez
+        tipo_documento:
+          type: string
+          example: CC
+        numero_documento:
+          type: string
+          example: '123456789'
+        rol:
+          type: string
+          enum:
+            - master
+            - administrador-cliente
+            - usuario
+            - soporte
+          example: administrador-cliente
+        id_empresa:
+          description: 'ID de la empresa (null si es master o soporte)'
+          type: integer
+          example: 1
+          nullable: true
+        id_perfil:
+          description: 'ID del perfil de permisos asociado'
+          type: integer
+          example: 2
+        password:
+          description: 'Contraseña (solo para envío en POST/PUT)'
+          type: string
+          writeOnly: true
+          example: password123
+        estado:
+          description: '1: Activo, 0: Inactivo'
+          type: integer
+          example: 1
+      type: object
+tags:
+  -
+    name: Empresas
+    description: Empresas
+  -
+    name: Módulos
+    description: Módulos
+  -
+    name: Perfiles
+    description: Perfiles
+  -
+    name: Planes
+    description: Planes
+  -
+    name: Usuarios
+    description: Usuarios
