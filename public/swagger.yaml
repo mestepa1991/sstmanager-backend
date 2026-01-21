@@ -103,6 +103,140 @@ paths:
       responses:
         '200':
           description: 'Estado cambiado'
+  '/index.php?table=categorias':
+    get:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Listar categorias activas (estado 1)'
+      operationId: 5c55bca0b7b8a7664fd366be8722e737
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoriaResponse'
+    post:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Crear nueva categoria'
+      description: 'Solo requiere los campos manuales. El ID y Estado son automáticos.'
+      operationId: 303a8326f9d32f8a49b91dbdb0da877a
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaRequest'
+      responses:
+        '201':
+          description: 'Categoria creada exitosamente'
+  '/index.php?table=categorias&id={id}':
+    put:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Actualizar categoria existente'
+      operationId: fe0bc8303803a0fbf578bc21754114b8
+      parameters:
+        -
+          name: id
+          in: query
+          description: 'ID autoincrementable de la categoría'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaRequest'
+      responses:
+        '200':
+          description: 'Actualizado con éxito'
+    delete:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Inactivar categoria (Borrado Lógico)'
+      operationId: 5a541f5fa5b70e220b7f191097ed25b7
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Estado cambiado a 0'
+  '/index.php?table=categoria_tipos':
+    get:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Listar todos los tipos activos'
+      operationId: 85f1fc990ab920a98a67fcf4d5874db3
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoriaTipoResponse'
+    post:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Crear nuevo tipo de categoría'
+      operationId: 38766335f1108aa4cb829967375dd0cc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaTipoRequest'
+      responses:
+        '201':
+          description: 'Creado con éxito'
+  '/index.php?table=categoria_tipos&id={id}':
+    put:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Actualizar tipo de categoría'
+      operationId: 9d584165b8224185c0c954b177f6e02a
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaTipoRequest'
+      responses:
+        '200':
+          description: Actualizado
+    delete:
+      tags:
+        - 'Admin - Categorias'
+      summary: 'Inactivar tipo (Borrado Lógico)'
+      operationId: e12931f43412891d2d69dda38b0be6de
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Estado cambiado a 0'
   '/index.php?table=ciclos_phva':
     get:
       tags:
@@ -802,6 +936,54 @@ components:
                 type: number
             type: object
       type: object
+    CategoriaRequest:
+      title: 'Cuerpo de Categoria'
+      description: 'Campos necesarios para crear o actualizar una categoría (Excluye campos automáticos)'
+      properties:
+        descripcion:
+          type: string
+          example: 'RECURSOS FINANCIEROS'
+      type: object
+    CategoriaResponse:
+      title: 'Respuesta de Categoria'
+      properties:
+        id:
+          type: integer
+          example: 1
+        descripcion:
+          type: string
+          example: 'RECURSOS FINANCIEROS'
+        estado:
+          type: integer
+          example: 1
+      type: object
+    CategoriaTipoRequest:
+      title: 'Cuerpo de Tipo de Categoría'
+      properties:
+        categoria_id:
+          description: 'ID de la categoría padre'
+          type: integer
+          example: 1
+        descripcion:
+          type: string
+          example: 'RECURSO HUMANO'
+      type: object
+    CategoriaTipoResponse:
+      title: 'Respuesta de Tipo de Categoría'
+      properties:
+        id:
+          type: integer
+          example: 1
+        categoria_id:
+          type: integer
+          example: 1
+        descripcion:
+          type: string
+          example: 'RECURSO HUMANO'
+        estado:
+          type: integer
+          example: 1
+      type: object
     Ciclo:
       title: 'Ciclo PHVA'
       description: 'Modelo de los pasos del ciclo PHVA'
@@ -915,6 +1097,9 @@ tags:
   -
     name: 'Admin - Calificaciones'
     description: 'Admin - Calificaciones'
+  -
+    name: 'Admin - Categorias'
+    description: 'Admin - Categorias'
   -
     name: 'Admin - Catálogos'
     description: 'Admin - Catálogos'
