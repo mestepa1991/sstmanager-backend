@@ -17,7 +17,7 @@ class PerfilController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=perfiles",
-     * tags={"Perfiles"},
+     * tags={"Admin"},
      * summary="Listar perfiles (Filtro Multi-empresa)",
      * description="Trae los perfiles de la empresa actual + los perfiles Master globales.",
      * @OA\Parameter(name="id_empresa", in="query", required=false, @OA\Schema(type="integer")),
@@ -43,7 +43,7 @@ class PerfilController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=perfiles&action=matriz",
-     * tags={"Perfiles"},
+     * tags={"Admin"},
      * summary="Obtener matriz global de permisos filtrada",
      * @OA\Parameter(name="id_empresa", in="query", required=false, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Matriz de seguridad")
@@ -81,7 +81,7 @@ class PerfilController extends GenericController {
     /**
      * @OA\Post(
      * path="/index.php?table=perfiles",
-     * tags={"Perfiles"},
+     * tags={"Admin"},
      * summary="Crear perfil asignado a empresa",
      * @OA\RequestBody(
      * required=true,
@@ -144,7 +144,7 @@ class PerfilController extends GenericController {
     /**
      * @OA\Put(
      * path="/index.php?table=perfiles&id={id}",
-     * tags={"Perfiles"},
+     * tags={"Admin"},
      * summary="Actualizar perfil y su matriz de permisos",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
@@ -200,7 +200,7 @@ class PerfilController extends GenericController {
     /**
      * @OA\Delete(
      * path="/index.php?table=perfiles&id={id}",
-     * tags={"Perfiles"},
+     * tags={"Admin"},
      * summary="Desactivar perfil (Borrado Lógico)",
      * description="Cambia el estado del perfil a 0 para mantener la integridad histórica.",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),

@@ -11,7 +11,7 @@ class ModuloModel extends GenericModel {
     public function install() {
     // Forzamos el DROP para asegurar que la nueva estructura se aplique
     
-    $sql = "CREATE TABLE modulos (
+    $sql = "CREATE TABLE IF NOT EXISTS modulos (
         `id_modulo` INT(11) AUTO_INCREMENT PRIMARY KEY,
         `nombre_modulo` VARCHAR(100) NOT NULL UNIQUE,
         `descripcion` TEXT NULL,

@@ -8,7 +8,7 @@ use OpenApi\Annotations as OA;
  * schema="Usuario",
  * title="Modelo de Usuario",
  * description="Esquema que representa a un usuario dentro del ecosistema Multi-tenant",
- * required={"nombre", "apellido", "tipo_documento", "numero_documento", "rol", "id_perfil"}
+ * required={"nombre", "apellido", "email", "tipo_documento", "numero_documento", "rol", "id_perfil"}
  * )
  */
 class UsuarioSerializer {
@@ -21,6 +21,9 @@ class UsuarioSerializer {
 
     /** @OA\Property(type="string", example="Pérez") */
     public $apellido;
+
+    /** @OA\Property(type="string", format="email", example="juan.perez@sst.com") */
+    public $email; // Nueva propiedad para Swagger y validación
 
     /** @OA\Property(type="string", example="CC") */
     public $tipo_documento;
@@ -50,8 +53,6 @@ class UsuarioSerializer {
 
     /**
      * Convierte los datos de la base de datos a un formato JSON estructurado.
-     * * @param array $data Fila de la base de datos.
-     * @return array|null
      */
     public static function toArray($data) {
         if (!$data) return null;
@@ -61,10 +62,11 @@ class UsuarioSerializer {
             'datos_personales' => [
                 'nombre' => $data['nombre'],
                 'apellido' => $data['apellido'],
-                'nombre_completo' => $data['nombre'] . ' ' . $data['apellido']
+                'nombre_completo' => $data['nombre'] . ' ' . $data['apellido'],
+                'correo' => $data['email'] // Mapeo del nuevo campo
             ],
             'identificacion' => [
-                'tipo' => $data['tipo_documento'],
+                'tipo' => $data['tipo_documento'] ?? 'CC',
                 'numero' => $data['numero_documento']
             ],
             'seguridad' => [
@@ -76,7 +78,7 @@ class UsuarioSerializer {
             ],
             'organizacion' => [
                 'id_empresa' => $data['id_empresa'] ? (int)$data['id_empresa'] : null,
-                'nombre_empresa' => $data['nombre_empresa'] ?? 'SST MASTER GLOBAL'
+                'nombre_empresa' => $data['nombre_empresa'] ?? ' '
             ],
             'estado_cuenta' => [
                 'activo' => (bool)($data['estado'] ?? 1),
@@ -85,11 +87,6 @@ class UsuarioSerializer {
         ];
     }
 
-    /**
-     * Convierte una lista de usuarios.
-     * * @param array $dataList Resultado de un fetchAll.
-     * @return array
-     */
     public static function toList($dataList) {
         return array_map([self::class, 'toArray'], $dataList);
     }

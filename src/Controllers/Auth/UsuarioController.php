@@ -2,7 +2,6 @@
 namespace App\Controllers\Auth;
 
 use OpenApi\Annotations as OA;
-
 use App\Controllers\GenericController;
 use App\Models\Auth\UsuarioModel;
 use App\Serializers\Auth\UsuarioSerializer;
@@ -18,7 +17,7 @@ class UsuarioController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=usuarios",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Listar usuarios con filtros de empresa",
      * @OA\Parameter(name="id_empresa", in="query", description="Filtrar por empresa (opcional para Master)", required=false, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Lista de usuarios", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Usuario")))
@@ -27,7 +26,6 @@ class UsuarioController extends GenericController {
     public function getAll() {
         $idEmpresa = $_GET['id_empresa'] ?? null;
 
-        // JOIN para traer nombres de perfiles y empresas en una sola consulta
         $sql = "SELECT u.*, p.nombre_perfil, e.nombre_empresa 
                 FROM usuarios u 
                 INNER JOIN perfiles p ON u.id_perfil = p.id_perfil 
@@ -51,10 +49,10 @@ class UsuarioController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=usuarios&id={id}",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Obtener un usuario por ID",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Datos del usuario")
+     * @OA\Response(response=200, description="Datos del usuario", @OA\JsonContent(ref="#/components/schemas/Usuario"))
      * )
      */
     public function getOne($id) {
@@ -79,48 +77,64 @@ class UsuarioController extends GenericController {
     /**
      * @OA\Post(
      * path="/index.php?table=usuarios",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Crear usuario",
      * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Usuario")),
-     * @OA\Response(response=201, description="Creado")
+     * @OA\Response(response=201, description="Usuario creado con éxito")
      * )
      */
-    public function create($input) {
+    public function create($input) {      
         try {
-            // Validaciones básicas
-            if (empty($input['numero_documento']) || empty($input['password'])) {
-                throw new Exception("Documento y password son obligatorios.");
+            // --- LIMPIEZA DE DATOS ---
+            // Quitamos el ID para que no se envíe al INSERT
+            unset($input['id']);
+            unset($input['id_usuario']); 
+            // -------------------------
+
+            if (empty($input['email']) || empty($input['password']) || empty($input['numero_documento'])) {
+                throw new Exception("Email, Documento y password son obligatorios.");
             }
 
-            // Lógica de Roles vs Empresa
+            if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("El formato del correo electrónico no es válido.");
+            }
+
+            // 2. Preparación de datos
+            // Asegúrate de que el rol coincida con los valores ENUM de tu base de datos ('master', 'usuario', etc.)
+            $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
+
+            // Ajuste de empresa según rol
             if (in_array($input['rol'], ['master', 'soporte'])) {
-                $input['id_empresa'] = null;
+                $input['id_empresa'] = null; 
             } elseif (empty($input['id_empresa'])) {
                 throw new Exception("Usuarios de cliente deben tener una empresa asignada.");
             }
 
-            // Encriptar password
-            $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
-
+            // 3. Intento de Creación
             $id = $this->model->create($input);
-            return json_encode(["id" => $id, "mensaje" => "Usuario registrado correctamente"]);
+
+            // 4. VERIFICACIÓN REAL (Aquí estaba el fallo)
+            if (!$id) {
+                // Si el ID es false, lanzamos error para ver qué pasó en la BD
+                throw new Exception("Error al insertar en BD. Verifique que el correo o documento no estén duplicados.");
+            }
+
+            return json_encode(["id" => $id, "mensaje" => "Usuario registrado correctamente con el email: " . $input['email']]);
+
         } catch (Exception $e) {
             http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
     }
 
-      /**
+    /**
      * @OA\Put(
      * path="/index.php?table=usuarios&id={id}",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Reemplazar usuario (Actualización Completa)",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\RequestBody(
-     * required=true,
-     * @OA\JsonContent(ref="#/components/schemas/Usuario")
-     * ),
-     * @OA\Response(response=200, description="Usuario reemplazado correctamente")
+     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Usuario")),
+     * @OA\Response(response=200, description="Usuario actualizado correctamente")
      * )
      */
     public function update($id, $input) {
@@ -147,13 +161,13 @@ class UsuarioController extends GenericController {
     /**
      * @OA\Patch(
      * path="/index.php?table=usuarios&id={id}",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Actualización Parcial (Solo campos enviados)",
-     * description="Envía solo los campos que deseas modificar, por ejemplo: {'estado': 0} o {'id_perfil': 2}",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
+     * @OA\Property(property="email", type="string", example="nuevo@correo.com"),
      * @OA\Property(property="nombre", type="string"),
      * @OA\Property(property="id_perfil", type="integer"),
      * @OA\Property(property="estado", type="integer")
@@ -163,22 +177,19 @@ class UsuarioController extends GenericController {
      * )
      */
     public function patch($id, $input) {
-        // En tu GenericModel, el método update ya es flexible y solo actualiza los campos presentes en el array.
-        // Por lo tanto, patch y update pueden compartir la lógica interna, pero Swagger los muestra distinto.
         return $this->update($id, $input);
     }
 
     /**
      * @OA\Delete(
      * path="/index.php?table=usuarios&id={id}",
-     * tags={"Usuarios"},
+     * tags={"Auth"},
      * summary="Inactivar Usuario",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Estado cambiado a inactivo")
      * )
      */
     public function delete($id) {
-        // Implementamos trazabilidad: No borramos la fila, cambiamos el estado
         $success = $this->model->update($id, ['estado' => 0]);
         
         return json_encode([

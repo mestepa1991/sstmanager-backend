@@ -7,7 +7,7 @@ class Database {
     private $host = "localhost";
     private $user = "root";
     private $pass = "";
-    private $db_name = "sst_manager"; // Valor por defecto
+    private $db_name = "sstmanager_db2"; // Valor por defecto
 
     public function __construct($dbName = null) {
         if ($dbName) {

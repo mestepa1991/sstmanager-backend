@@ -13,17 +13,20 @@ use App\Models\Admin\PlanModel;
 use App\Models\Admin\EmpresaModel;
 use App\Models\Admin\PerfilModel;
 use App\Models\Auth\UsuarioModel;
+use App\Models\Admin\CicloModel;
+use App\Models\Admin\CalificacionModel;
 
 $host = 'localhost';
 $user = 'root';
 $pass = ''; 
 $dbName = 'sstmanager_db2'; 
 
-echo "-------------------------------------------------\n";
-echo "⚙️  ETAPA 1: VERIFICACIÓN DE BASE DE DATOS\n";
-echo "-------------------------------------------------\n";
-
+// --- UN SOLO BLOQUE TRY PARA TODO EL PROCESO ---
 try {
+    echo "-------------------------------------------------\n";
+    echo "⚙️  ETAPA 1: VERIFICACIÓN DE BASE DE DATOS\n";
+    echo "-------------------------------------------------\n";
+
     $pdo = new PDO("mysql:host=$host", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -34,33 +37,38 @@ try {
     echo "🏗️  ETAPA 2: MIGRACIÓN DE TABLAS ORGANIZADAS\n";
     echo "-------------------------------------------------\n";
 
-// PASAMOS LA VARIABLE $dbName AL CONSTRUCTOR
-$dbConfig = new Database($dbName); 
-$db = $dbConfig->getConnection();
+    // Instanciamos la conexión dinámica
+    $dbConfig = new Database($dbName); 
+    $db = $dbConfig->getConnection();
 
-// Desactivamos llaves foráneas para evitar el error 1451
-$db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+    // Desactivar FK para cambios estructurales seguros
+    $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-// Instalación en orden (Jerarquía SaaS)
-(new ModuloModel($db))->install();
-echo "✅ 1. Módulos configurados.\n";
+    echo "🔄 Sincronizando estructura de tablas...\n";
 
-(new PlanModel($db))->install();
-echo "✅ 2. Planes de suscripción listos.\n";
+    $modelos = [
+        new ModuloModel($db),
+        new PlanModel($db),
+        new EmpresaModel($db),
+        new PerfilModel($db),
+        new UsuarioModel($db),
+        new CicloModel($db),
+        new CalificacionModel($db)
+    ];
 
-   
-    (new EmpresaModel($db))->install();
-    echo "✅ 3. Tabla de Empresas (Tenants) creada.\n";
+    foreach ($modelos as $index => $modelo) {
+        echo "   🔹 [" . ($index + 1) . "] Procesando " . get_class($modelo) . "...\n";
+        $modelo->install();
+    }
 
-    (new PerfilModel($db))->install();
-    echo "✅ 4. Perfiles y permisos por empresa listos.\n";
-
-    (new UsuarioModel($db))->install();
-    echo "✅ 5. Usuarios iniciales configurados.\n";
-
+    // Reactivar FK
+    $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+    
     echo "--------------------------------------------------\n";
-    echo "✨ ¡Sistema inicializado con éxito!\n";
+    echo "✨ Sistema sincronizado y listo para Auth.\n";
 
+} catch (PDOException $e) {
+    echo "\n❌ Error de Base de Datos: " . $e->getMessage() . "\n";
 } catch (Exception $e) {
-    die("\n❌ Error Fatal: " . $e->getMessage() . "\n");
+    echo "\n❌ Error General: " . $e->getMessage() . "\n";
 }

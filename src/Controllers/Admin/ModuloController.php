@@ -18,7 +18,7 @@ class ModuloController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=modulos",
-     * tags={"Módulos"},
+     * tags={"Admin - Catálogos"},
      * summary="Listar módulos",
      * description="Por defecto trae solo los activos. Usa ?todos=true para ver el historial completo (incluyendo eliminados).",
      * @OA\Parameter(
@@ -56,7 +56,7 @@ class ModuloController extends GenericController {
     /**
      * @OA\Post(
      * path="/index.php?table=modulos",
-     * tags={"Módulos"},
+     * tags={"Admin - Catálogos"},
      * summary="Crear módulo",
      * @OA\RequestBody(
      * required=true,
@@ -94,7 +94,7 @@ class ModuloController extends GenericController {
     /**
      * @OA\Put(
      * path="/index.php?table=modulos&id={id}",
-     * tags={"Módulos"},
+     * tags={"Admin - Catálogos"},
      * summary="Actualizar módulo",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
@@ -116,7 +116,7 @@ class ModuloController extends GenericController {
     /**
      * @OA\Delete(
      * path="/index.php?table=modulos&id={id}",
-     * tags={"Módulos"},
+     * tags={"Admin - Catálogos"},
      * summary="Desactivar módulo (Soft Delete)",
      * description="No elimina el registro. Cambia estado a 0 para mantener trazabilidad.",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),

@@ -41,23 +41,25 @@ class GenericModel {
      * CREATE: Insertar un nuevo registro
      */
     public function create($data) {
+        // 1. Prepara las columnas y valores
+        $keys = implode(", ", array_keys($data));
+        $values = array_values($data);
+        $placeholders = implode(", ", array_fill(0, count($values), "?"));
+
+        $sql = "INSERT INTO {$this->table} ($keys) VALUES ($placeholders)";
+
+        // 2. Aquí es donde ponemos la trampa para ver el error
         try {
-            $columns = implode(', ', array_keys($data));
-            $placeholders = ':' . implode(', :', array_keys($data));
-
-            $query = "INSERT INTO " . $this->table . " ($columns) VALUES ($placeholders)";
-            $stmt = $this->db->prepare($query);
-
-            foreach ($data as $key => $val) {
-                $stmt->bindValue(':' . $key, $val);
-            }
-
-            if ($stmt->execute()) {
-                return $this->db->lastInsertId();
-            }
-            return false;
-        } catch (Exception $e) {
-            return false;
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($values);
+            return $this->db->lastInsertId();
+        } catch (\PDOException $e) {
+            // ¡ESTO ES LO QUE TE MOSTRARÁ EL ERROR EN SWAGGER!
+            die(json_encode([
+                "error_critico" => "Fallo SQL en GenericModel",
+                "mensaje" => $e->getMessage(),
+                "sql_intentado" => $sql
+            ]));
         }
     }
 

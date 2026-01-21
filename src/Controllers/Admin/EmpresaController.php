@@ -17,7 +17,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=empresas",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Listar todas las empresas con su plan actual",
      * @OA\Response(
      * response=200, 
@@ -42,7 +42,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=empresas&id={id}",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Obtener detalle de una empresa por ID",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Detalle de la empresa")
@@ -67,7 +67,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Post(
      * path="/index.php?table=empresas",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Registrar nueva empresa",
      * @OA\RequestBody(
      * required=true,
@@ -107,7 +107,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Put(
      * path="/index.php?table=empresas&id={id}",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Reemplazar datos de la empresa (Actualización Completa)",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
@@ -153,7 +153,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Patch(
      * path="/index.php?table=empresas&id={id}",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Actualización parcial de empresa",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
@@ -174,7 +174,7 @@ class EmpresaController extends GenericController {
     /**
      * @OA\Delete(
      * path="/index.php?table=empresas&id={id}",
-     * tags={"Empresas"},
+     * tags={"Admin"},
      * summary="Suspender empresa (Soft Delete)",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Inactivada")

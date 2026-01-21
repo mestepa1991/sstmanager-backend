@@ -1,36 +1,17 @@
 <?php
-use OpenApi\Annotations as OA;
 use App\Config\Database;
 use App\Controllers\GenericController;
-use App\Controllers\UsuarioController; // Importamos el nuevo controlador
-
-/**
- * @OA\Info(
- * title="SSTManager API",
- * version="1.0.0",
- * description="Sistema de Gestión de Seguridad y Salud en el Trabajo"
- * )
- * @OA\Server(
- * url="/sstmanager-backend/public",
- * description="Servidor Local"
- * )
- */
-
-/**
- * @OA\Schema(
- * schema="GenericBody",
- * title="Cuerpo de Petición",
- * @OA\Property(property="nombre", type="string", example="Ejemplo"),
- * @OA\Property(property="descripcion", type="string", example="Detalle del registro")
- * )
- */
+use App\Controllers\Auth\AuthController;
+use App\Controllers\Auth\UsuarioController;
+use App\Controllers\Admin\CicloController;
+use App\Controllers\Admin\CalificacionController;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// Cabeceras de respuesta y CORS
+// 1. Configuración de Cabeceras y CORS (Siempre va primero)
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -38,62 +19,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$database = new Database();
+// 2. Conexión a la Base de Datos
+$database = new Database(); 
 $db = $database->getConnection();
 
+// 3. Captura de Parámetros
 $table  = $_GET['table'] ?? null;
+$action = $_GET['action'] ?? null; // <--- IMPORTANTE: Capturamos 'action'
 $id     = $_GET['id'] ?? null;
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $input  = json_decode(file_get_contents("php://input"), true);
 
-$tablasPermitidas = [
-    'ciclos_phva', 'estandares_tipos', 'formularios', 'formulario_items', 
-    'frecuencias', 'items_estandar', 'modulos', 'perfiles', 'perfil_permisos', 
-    'planes', 'plan_modulos_permisos', 'rangos_calificacion', 'recursos', 
-    'responsables', 'tipos_norma', 'usuarios'
-];
-
-if (!$table) {
-    echo json_encode(["sistema" => "SSTManager API", "mensaje" => "Usa ?table=nombre_tabla"]);
-    exit;
-}
-
-if (!in_array($table, $tablasPermitidas)) {
-    http_response_code(404);
-    echo json_encode(["error" => "Tabla '$table' no permitida"]);
-    exit;
-}
-
-/**
- * ENRUTAMIENTO LÓGICO
- * Si la tabla es 'usuarios', usamos el controlador especializado.
- * Para cualquier otra tabla, usamos el controlador genérico.
- */
-if ($table === 'usuarios') {
-    $controller = new UsuarioController($db);
-    
-    // Ejecutamos los métodos específicos que creamos en UsuarioController
-    switch ($method) {
-        case 'GET':
-            echo $id ? $controller->getUser($id) : $controller->getAllUsers();
-            break;
-        case 'POST':
-            echo $controller->create($input);
-            break;
-        case 'PUT':
-            // Asumiendo que implementaremos update en el controlador
-            echo $controller->update($id, $input);
-            break;
-        case 'DELETE':
-            echo $controller->delete($id);
-            break;
-        default:
-            http_response_code(405);
-            echo json_encode(["error" => "Método no soportado"]);
-            break;
+// 4. ENRUTAMIENTO PRINCIPAL
+try {
+    // CASO 1: LOGIN (Prioridad Alta - AuthController)
+    if ($action === 'login' && $method === 'POST') {
+        $authController = new AuthController($db); 
+        echo $authController->login($input);       
+        exit; // Detenemos la ejecución aquí
     }
-} else {
-    // Uso del controlador genérico para las otras 15 tablas
-    $controller = new GenericController($db, $table);
-    echo $controller->handleRequest($method, $id, $input);
+
+    // Validación: Si no es login, necesitamos una tabla obligatoriamente
+    if (!$table) {
+        echo json_encode(["sistema" => "SSTManager API", "estado" => "En línea. Use ?table=nombre o ?action=login"]);
+        exit;
+    }
+
+    // CASO 2: USUARIOS (UsuarioController)
+    if ($table === 'usuarios') {
+        $controller = new UsuarioController($db);
+        
+        echo match ($method) {
+            'GET'    => $id ? $controller->getOne($id) : $controller->getAll(),
+            'POST'   => $controller->create($input),
+            'PUT'    => $controller->update($id, $input),
+            'PATCH'  => $controller->patch($id, $input),
+            'DELETE' => $controller->delete($id),
+            default  => throw new Exception("Método $method no soportado", 405)
+        };
+    } elseif ($table === 'ciclos_phva') {
+        $controller = new CicloController($db);
+        
+        echo match ($method) {
+            'GET' => $id ? $controller->getOne($id) : $controller->getAll(),
+            // Si quieres permitir crear/editar, agrega los casos POST/PUT aquí
+            default => throw new Exception("Método no permitido para ciclos", 405)
+        };
+    }    
+    // CASO 3: RESTO DEL SISTEMA (GenericController)
+    else {
+        // Aquí entran planes, modulos, perfiles, etc.
+        $controller = new GenericController($db, $table);
+        echo $controller->handleRequest($method, $id, $input);
+    }
+    // CASO ESPECÍFICO: CALIFICACIONES (Para ver el maestro-detalle)
+    if ($table === 'calificaciones') {
+    $controller = new CalificacionController($db);
+    
+    echo match ($method) {
+        'GET'    => $id ? $controller->getOne($id) : $controller->getAll(),
+        'POST'   => $controller->create($input),
+        'PUT'    => $controller->update($id, $input),
+        'DELETE' => $controller->delete($id),
+        default  => throw new Exception("Método no permitido", 405)
+    };
+    exit;
+}
+
+} catch (Exception $e) {
+    http_response_code($e->getCode() ?: 400);
+    echo json_encode(["error" => $e->getMessage()]);
 }

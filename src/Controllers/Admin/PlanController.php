@@ -17,7 +17,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=planes",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Listar todos los planes con sus módulos permitidos",
      * @OA\Response(
      * response=200, 
@@ -49,7 +49,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Get(
      * path="/index.php?table=planes&id={id}",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Obtener detalle de un plan específico",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Detalle del plan")
@@ -76,7 +76,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Post(
      * path="/index.php?table=planes",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Crear un nuevo plan comercial",
      * @OA\RequestBody(
      * required=true,
@@ -125,7 +125,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Put(
      * path="/index.php?table=planes&id={id}",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Actualización total del plan",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Plan")),
@@ -167,7 +167,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Patch(
      * path="/index.php?table=planes&id={id}",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Actualización parcial del plan",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Actualizado")
@@ -180,7 +180,7 @@ class PlanController extends GenericController {
     /**
      * @OA\Delete(
      * path="/index.php?table=planes&id={id}",
-     * tags={"Planes"},
+     * tags={"Admin"},
      * summary="Desactivar plan (con validación de uso)",
      * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Desactivado")
