@@ -466,13 +466,12 @@ paths:
       responses:
         '200':
           description: Actualizado
-  '/index.php?table=perfiles':
+  /perfiles:
     get:
       tags:
-        - Admin
-      summary: 'Listar perfiles (Filtro Multi-empresa)'
-      description: 'Trae los perfiles de la empresa actual + los perfiles Master globales.'
-      operationId: d47d6e078c5f06eafa609228141be117
+        - 'Seguridad - Perfiles'
+      summary: 'Listar perfiles de seguridad'
+      operationId: getPerfilesList
       parameters:
         -
           name: id_empresa
@@ -482,54 +481,49 @@ paths:
             type: integer
       responses:
         '200':
-          description: 'Lista filtrada'
+          description: Exitoso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Perfil'
     post:
       tags:
-        - Admin
-      summary: 'Crear perfil asignado a empresa'
-      operationId: c943c35c78e2d6b91f4bf851110d6074
+        - 'Seguridad - Perfiles'
+      summary: 'Crear nuevo perfil'
+      operationId: createPerfil
       requestBody:
         required: true
         content:
           application/json:
             schema:
+              required:
+                - nombre_perfil
               properties:
                 nombre_perfil:
                   type: string
-                  example: 'Supervisor Local'
+                  example: Administrador
+                descripcion:
+                  type: string
+                  example: 'Acceso total al sistema'
                 id_empresa:
                   type: integer
-                  example: 1
+                  nullable: true
               type: object
       responses:
         '201':
           description: Creado
-  '/index.php?table=perfiles&action=matriz':
-    get:
-      tags:
-        - Admin
-      summary: 'Obtener matriz global de permisos filtrada'
-      operationId: fa823e9b7e25117350106decee72b92e
-      parameters:
-        -
-          name: id_empresa
-          in: query
-          required: false
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: 'Matriz de seguridad'
-  '/index.php?table=perfiles&id={id}':
+  '/perfiles/{id}':
     put:
       tags:
-        - Admin
-      summary: 'Actualizar perfil y su matriz de permisos'
-      operationId: ba30ff635256cda024a256cd1c10ce64
+        - 'Seguridad - Perfiles'
+      summary: 'Actualizar perfil'
+      operationId: updatePerfil
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -541,42 +535,39 @@ paths:
               properties:
                 nombre_perfil:
                   type: string
-                  example: 'Supervisor SST'
                 descripcion:
                   type: string
-                permisos:
-                  type: array
-                  items: { properties: { id_modulo: { type: integer }, ver: { type: boolean }, crear: { type: boolean }, editar: { type: boolean }, eliminar: { type: boolean } }, type: object }
+                estado:
+                  type: integer
               type: object
       responses:
         '200':
-          description: 'Perfil actualizado exitosamente'
+          description: Actualizado
     delete:
       tags:
-        - Admin
-      summary: 'Desactivar perfil (Borrado Lógico)'
-      description: 'Cambia el estado del perfil a 0 para mantener la integridad histórica.'
-      operationId: 2c9c551c57e92f314a581d01d6089294
+        - 'Seguridad - Perfiles'
+      summary: 'Desactivar perfil'
+      operationId: 885b69de8db836560f534225ce91a43c
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
       responses:
         '200':
-          description: 'Perfil desactivado'
+          description: Desactivado
   /planes:
     get:
       tags:
         - 'Admin - Planes'
-      summary: 'Listar planes'
+      summary: 'Listar todos los planes'
       description: 'Ruta real: /index.php?table=planes'
       operationId: getPlanesList
       responses:
         '200':
-          description: 'Lista de planes'
+          description: 'Lista de planes comerciales'
           content:
             application/json:
               schema:
@@ -586,22 +577,44 @@ paths:
     post:
       tags:
         - 'Admin - Planes'
-      summary: 'Crear plan'
+      summary: 'Crear un nuevo plan comercial'
+      description: 'Ruta real: /index.php?table=planes (POST)'
       operationId: createPlan
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Plan'
+              required:
+                - nombre_plan
+                - modulos
+              properties:
+                nombre_plan:
+                  type: string
+                  example: 'Plan Pro'
+                descripcion:
+                  type: string
+                  example: 'Acceso a módulos avanzados'
+                limite_usuarios:
+                  type: integer
+                  example: 20
+                precio_mensual:
+                  type: number
+                  example: 59.9
+                modulos:
+                  type: array
+                  items: { type: integer }
+                  example: [1, 2, 3]
+              type: object
       responses:
         '201':
-          description: Creado
+          description: 'Plan creado'
   '/planes/{id}':
     get:
       tags:
         - 'Admin - Planes'
-      summary: 'Detalle plan'
+      summary: 'Obtener detalle de un plan'
+      description: 'Ruta real: /index.php?table=planes&id={id}'
       operationId: getPlanDetail
       parameters:
         -
@@ -612,11 +625,12 @@ paths:
             type: integer
       responses:
         '200':
-          description: Detalle
+          description: 'Detalle del plan'
     put:
       tags:
         - 'Admin - Planes'
-      summary: 'Actualizar plan'
+      summary: 'Actualización total del plan'
+      description: 'Ruta real: /index.php?table=planes&id={id} (PUT)'
       operationId: updatePlan
       parameters:
         -
@@ -633,11 +647,12 @@ paths:
               $ref: '#/components/schemas/Plan'
       responses:
         '200':
-          description: Actualizado
+          description: 'Plan actualizado'
     delete:
       tags:
         - 'Admin - Planes'
-      summary: 'Inactivar plan'
+      summary: 'Desactivar plan'
+      description: 'Ruta real: /index.php?table=planes&id={id} (DELETE)'
       operationId: deletePlan
       parameters:
         -
@@ -648,7 +663,22 @@ paths:
             type: integer
       responses:
         '200':
-          description: Inactivado
+          description: Desactivado
+    patch:
+      tags:
+        - 'Admin - Planes'
+      summary: 'Actualización parcial'
+      operationId: patchPlan
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Actualizado
   '/index.php?action=login':
     post:
       tags:
@@ -934,12 +964,10 @@ components:
           example: 1
         nombre_perfil:
           type: string
-          example: 'Administrador de Empresa'
-        id_empresa:
-          description: 'NULL para globales, ID para locales'
-          type: integer
-          nullable: true
+          example: Administrador
       type: object
+    Permiso:
+      title: 'Matriz de Permisos'
     Plan:
       title: 'Plan de Suscripción'
       description: 'Define los límites comerciales y módulos permitidos para una empresa'
@@ -1018,8 +1046,8 @@ tags:
     name: 'Admin - Empresas'
     description: 'Admin - Empresas'
   -
-    name: Admin
-    description: Admin
+    name: 'Seguridad - Perfiles'
+    description: 'Seguridad - Perfiles'
   -
     name: 'Admin - Planes'
     description: 'Admin - Planes'
