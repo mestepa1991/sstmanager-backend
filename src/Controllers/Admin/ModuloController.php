@@ -14,37 +14,32 @@ class ModuloController extends GenericController {
         $this->model = new ModuloModel($db); 
     }
 
-    
     /**
      * @OA\Get(
-     * path="/index.php?table=modulos",
+     * path="/modulos",
+     * operationId="getModulosList",
      * tags={"Admin - Catálogos"},
-     * summary="Listar módulos",
-     * description="Por defecto trae solo los activos. Usa ?todos=true para ver el historial completo (incluyendo eliminados).",
+     * summary="Listar módulos y funciones",
      * @OA\Parameter(
      * name="todos",
      * in="query",
-     * description="Enviar 'true' para ver inactivos también",
      * required=false,
      * @OA\Schema(type="string", enum={"true", "false"})
      * ),
      * @OA\Response(
      * response=200,
-     * description="Lista de módulos",
+     * description="Exitoso",
      * @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Modulo"))
      * )
      * )
      */
     public function getAll() {
-        // Lógica de Trazabilidad: Filtro Inteligente
         $mostrarTodos = isset($_GET['todos']) && $_GET['todos'] === 'true';
 
         if ($mostrarTodos) {
-            // Trae TODO el historial (Activos e Inactivos)
             $data = $this->model->all();
         } else {
-            // SQL Manual para filtrar solo estado=1 (Activos)
-            $sql = "SELECT * FROM modulos WHERE estado = 1";
+            $sql = "SELECT * FROM modulos WHERE estado = 1 ORDER BY id_padre ASC, id_modulo ASC";
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
             $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -55,81 +50,81 @@ class ModuloController extends GenericController {
 
     /**
      * @OA\Post(
-     * path="/index.php?table=modulos",
+     * path="/modulos",
+     * operationId="createModulo",
      * tags={"Admin - Catálogos"},
-     * summary="Crear módulo",
+     * summary="Crear módulo o función",
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
      * required={"nombre_modulo"},
      * @OA\Property(property="nombre_modulo", type="string", example="Inventarios"),
      * @OA\Property(property="descripcion", type="string", example="Control de stock"),
-     * @OA\Property(property="icono", type="string", example="fas fa-box")
+     * @OA\Property(property="icono", type="string", example="fas fa-box"),
+     * @OA\Property(property="id_padre", type="integer", nullable=true, example=0)
      * )
      * ),
-     * @OA\Response(response=201, description="Creado"),
-     * @OA\Response(response=409, description="Duplicado")
+     * @OA\Response(response=201, description="Creado")
      * )
      */
     public function create($input) {
         try {
             if (empty($input['nombre_modulo'])) throw new Exception("Nombre obligatorio");
 
-            // Verificar duplicados
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM modulos WHERE nombre_modulo = ?");
-            $stmt->execute([$input['nombre_modulo']]);
-            if ($stmt->fetchColumn() > 0) {
-                http_response_code(409);
-                throw new Exception("El módulo ya existe.");
+            // Normalización: 0 o vacío se guarda como NULL (Módulo Principal)
+            if (empty($input['id_padre']) || $input['id_padre'] == 0) {
+                $input['id_padre'] = null;
             }
 
             $id = $this->model->create($input);
-            return json_encode(["id" => $id, "mensaje" => "Módulo creado"]);
+            return json_encode(["id" => $id, "mensaje" => "Registrado correctamente"]);
 
         } catch (Exception $e) {
+            http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
     }
 
     /**
      * @OA\Put(
-     * path="/index.php?table=modulos&id={id}",
+     * path="/modulos/{id}",
+     * operationId="updateModulo",
      * tags={"Admin - Catálogos"},
      * summary="Actualizar módulo",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
      * @OA\Property(property="nombre_modulo", type="string"),
-     * @OA\Property(property="descripcion", type="string"),
-     * @OA\Property(property="estado", type="integer", description="1 para activar, 0 para desactivar")
+     * @OA\Property(property="id_padre", type="integer", nullable=true),
+     * @OA\Property(property="estado", type="integer")
      * )
      * ),
      * @OA\Response(response=200, description="Actualizado")
      * )
      */
     public function update($id, $input) {
-        $success = $this->model->update($id, $input);
-        return json_encode(["ok" => $success, "mensaje" => "Actualizado correctamente"]);
+        try {
+            if (array_key_exists('id_padre', $input)) {
+                if (empty($input['id_padre']) || $input['id_padre'] == 0) {
+                    $input['id_padre'] = null;
+                }
+                if ($input['id_padre'] == $id) {
+                    throw new Exception("Un módulo no puede ser su propio padre.");
+                }
+            }
+
+            $success = $this->model->update($id, $input);
+            return json_encode(["ok" => $success, "mensaje" => "Actualizado correctamente"]);
+
+        } catch (Exception $e) {
+            http_response_code(400);
+            return json_encode(["error" => $e->getMessage()]);
+        }
     }
 
-    /**
-     * @OA\Delete(
-     * path="/index.php?table=modulos&id={id}",
-     * tags={"Admin - Catálogos"},
-     * summary="Desactivar módulo (Soft Delete)",
-     * description="No elimina el registro. Cambia estado a 0 para mantener trazabilidad.",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Desactivado correctamente")
-     * )
-     */
     public function delete($id) {
-        // AQUÍ ESTÁ LA MAGIA: Update en lugar de Delete
         $success = $this->model->update($id, ['estado' => 0]);
-        
-        return json_encode([
-            "ok" => $success, 
-            "mensaje" => $success ? "Módulo desactivado (Archivado)" : "Error al desactivar"
-        ]);
+        return json_encode(["ok" => $success, "mensaje" => "Desactivado"]);
     }
 }

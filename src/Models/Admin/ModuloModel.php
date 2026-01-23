@@ -12,27 +12,25 @@ class ModuloModel extends GenericModel {
     // Forzamos el DROP para asegurar que la nueva estructura se aplique
     
     $sql = "CREATE TABLE IF NOT EXISTS modulos (
-        `id_modulo` INT(11) AUTO_INCREMENT PRIMARY KEY,
-        `nombre_modulo` VARCHAR(100) NOT NULL UNIQUE,
-        `descripcion` TEXT NULL,
-        `icono` VARCHAR(50) DEFAULT 'fas fa-cube',
-        `estado` TINYINT(1) DEFAULT 1
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+    `id_modulo` INT(11) AUTO_INCREMENT PRIMARY KEY,
+    `id_padre` INT(11) NULL DEFAULT NULL, -- NULL = Módulo, Numero = Función
+    `nombre_modulo` VARCHAR(100) NOT NULL, -- Quité el UNIQUE global para evitar conflictos si dos módulos tienen una función con el mismo nombre
+    `descripcion` TEXT NULL,
+    `icono` VARCHAR(50) DEFAULT 'fas fa-cube',
+    `estado` TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (`id_padre`) REFERENCES `modulos`(`id_modulo`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
     $this->db->exec($sql);
-    $this->seedModulosIniciales();
+
     }
 
     // Lista maestra de módulos del sistema
     private function seedModulosIniciales() {
         $modulosBase = [
-            ['nombre' => 'Dashboard', 'desc' => 'Panel de control principal'],
-            ['nombre' => 'Usuarios', 'desc' => 'Gestión de usuarios y accesos'],
-            ['nombre' => 'Perfiles', 'desc' => 'Configuración de roles y permisos'],
-            ['nombre' => 'Planes', 'desc' => 'Gestión de planes de suscripción'],
-            ['nombre' => 'Empresas', 'desc' => 'Administración de clientes/empresas'],
-            ['nombre' => 'Normatividad', 'desc' => 'Matriz legal y normas'],
-            ['nombre' => 'Formularios', 'desc' => 'Creador de formularios dinámicos']
+            ['nombre' => 'ADMINISTRCION', 'desc' => 'Panel de control principal'],
+            ['nombre' => 'SEGURIDAD', 'desc' => 'Gestión de usuarios y accesos'],
+            ['nombre' => 'EMPRESAS', 'desc' => 'Configuración de roles y permisos']            
         ];
 
         // Cambia ':desc' por ':descripcion' para que coincida con el nombre de la columna física

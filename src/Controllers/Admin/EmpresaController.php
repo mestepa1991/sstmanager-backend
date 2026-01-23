@@ -16,12 +16,14 @@ class EmpresaController extends GenericController {
 
     /**
      * @OA\Get(
-     * path="/index.php?table=empresas",
-     * tags={"Admin"},
-     * summary="Listar todas las empresas con su plan actual",
+     * path="/empresas",
+     * operationId="getEmpresasList",
+     * tags={"Admin - Empresas"},
+     * summary="Listar todas las empresas",
+     * description="Ruta real: /index.php?table=empresas",
      * @OA\Response(
      * response=200, 
-     * description="Lista de clientes",
+     * description="Lista de empresas",
      * @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Empresa"))
      * )
      * )
@@ -41,11 +43,13 @@ class EmpresaController extends GenericController {
 
     /**
      * @OA\Get(
-     * path="/index.php?table=empresas&id={id}",
-     * tags={"Admin"},
-     * summary="Obtener detalle de una empresa por ID",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Detalle de la empresa")
+     * path="/empresas/{id}",
+     * operationId="getEmpresaDetail",
+     * tags={"Admin - Empresas"},
+     * summary="Obtener detalle de empresa",
+     * description="Ruta real: /index.php?table=empresas&id={id}",
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Detalle")
      * )
      */
     public function getOne($id) {
@@ -66,39 +70,35 @@ class EmpresaController extends GenericController {
 
     /**
      * @OA\Post(
-     * path="/index.php?table=empresas",
-     * tags={"Admin"},
-     * summary="Registrar nueva empresa",
+     * path="/empresas",
+     * operationId="createEmpresa",
+     * tags={"Admin - Empresas"},
+     * summary="Registrar empresa",
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
      * required={"nombre_empresa", "nit", "id_plan"},
-     * @OA\Property(property="nombre_empresa", type="string", example="Empresa Ejemplo S.A.S"),
-     * @OA\Property(property="nit", type="string", example="900123456-7"),
+     * @OA\Property(property="nombre_empresa", type="string", example="Empresa SAS"),
+     * @OA\Property(property="nit", type="string", example="900123456"),
      * @OA\Property(property="id_plan", type="integer", example=1),
-     * @OA\Property(property="email_contacto", type="string", example="admin@empresa.com"),
-     * @OA\Property(property="telefono", type="string", example="3001234567"),
-     * @OA\Property(property="direccion", type="string", example="Calle 123 # 45-67")
+     * @OA\Property(property="email_contacto", type="string"),
+     * @OA\Property(property="telefono", type="string"),
+     * @OA\Property(property="direccion", type="string")
      * )
      * ),
-     * @OA\Response(response=201, description="Empresa creada")
+     * @OA\Response(response=201, description="Creada")
      * )
      */
     public function create($input) {
         try {
-            if (empty($input['nit']) || empty($input['id_plan'])) {
-                throw new Exception("NIT e ID de Plan son obligatorios.");
-            }
+            if (empty($input['nit']) || empty($input['id_plan'])) throw new Exception("NIT e ID Plan requeridos.");
 
             $stmt = $this->db->prepare("SELECT COUNT(*) FROM empresas WHERE nit = ?");
             $stmt->execute([$input['nit']]);
-            if ($stmt->fetchColumn() > 0) {
-                http_response_code(409);
-                throw new Exception("El NIT ya está registrado en el sistema.");
-            }
+            if ($stmt->fetchColumn() > 0) throw new Exception("El NIT ya existe.");
 
             $id = $this->model->create($input);
-            return json_encode(["id" => $id, "mensaje" => "Empresa registrada exitosamente"]);
+            return json_encode(["id" => $id, "mensaje" => "Empresa registrada"]);
         } catch (Exception $e) {
             return json_encode(["error" => $e->getMessage()]);
         }
@@ -106,44 +106,24 @@ class EmpresaController extends GenericController {
 
     /**
      * @OA\Put(
-     * path="/index.php?table=empresas&id={id}",
-     * tags={"Admin"},
-     * summary="Reemplazar datos de la empresa (Actualización Completa)",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\RequestBody(
-     * required=true,
-     * @OA\JsonContent(
-     * required={"nombre_empresa", "nit", "id_plan"},
-     * @OA\Property(property="nombre_empresa", type="string"),
-     * @OA\Property(property="nit", type="string"),
-     * @OA\Property(property="id_plan", type="integer"),
-     * @OA\Property(property="email_contacto", type="string"),
-     * @OA\Property(property="telefono", type="string"),
-     * @OA\Property(property="direccion", type="string"),
-     * @OA\Property(property="logo_url", type="string"),
-     * @OA\Property(property="estado", type="integer", example=1)
-     * )
-     * ),
-     * @OA\Response(response=200, description="Actualizado")
+     * path="/empresas/{id}",
+     * operationId="updateEmpresa",
+     * tags={"Admin - Empresas"},
+     * summary="Actualizar empresa",
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Empresa")),
+     * @OA\Response(response=200, description="Actualizada")
      * )
      */
     public function update($id, $input) {
         try {
-            if (empty($input)) throw new Exception("No se enviaron datos.");
-
             if (isset($input['nit'])) {
                 $stmt = $this->db->prepare("SELECT COUNT(*) FROM empresas WHERE nit = ? AND id_empresa != ?");
                 $stmt->execute([$input['nit'], $id]);
-                if ($stmt->fetchColumn() > 0) {
-                    throw new Exception("El NIT enviado ya pertenece a otra empresa.");
-                }
+                if ($stmt->fetchColumn() > 0) throw new Exception("El NIT ya pertenece a otra empresa.");
             }
-
             $success = $this->model->update($id, $input);
-            return json_encode([
-                "ok" => $success, 
-                "mensaje" => $success ? "Empresa actualizada" : "Sin cambios realizados"
-            ]);
+            return json_encode(["ok" => $success, "mensaje" => "Actualizado correctamente"]);
         } catch (Exception $e) {
             http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
@@ -151,40 +131,17 @@ class EmpresaController extends GenericController {
     }
 
     /**
-     * @OA\Patch(
-     * path="/index.php?table=empresas&id={id}",
-     * tags={"Admin"},
-     * summary="Actualización parcial de empresa",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
-     * @OA\RequestBody(
-     * required=true,
-     * @OA\JsonContent(
-     * @OA\Property(property="nombre_empresa", type="string"),
-     * @OA\Property(property="id_plan", type="integer"),
-     * @OA\Property(property="estado", type="integer")
-     * )
-     * ),
-     * @OA\Response(response=200, description="Campo actualizado")
-     * )
-     */
-    public function patch($id, $input) {
-        return $this->update($id, $input);
-    }
-
-    /**
      * @OA\Delete(
-     * path="/index.php?table=empresas&id={id}",
-     * tags={"Admin"},
-     * summary="Suspender empresa (Soft Delete)",
-     * @OA\Parameter(name="id", in="query", required=true, @OA\Schema(type="integer")),
+     * path="/empresas/{id}",
+     * operationId="deleteEmpresa",
+     * tags={"Admin - Empresas"},
+     * summary="Inactivar empresa",
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Inactivada")
      * )
      */
     public function delete($id) {
         $success = $this->model->update($id, ['estado' => 0]);
-        return json_encode([
-            "ok" => $success, 
-            "mensaje" => $success ? "Empresa suspendida correctamente" : "Error al suspender"
-        ]);
+        return json_encode(["ok" => $success, "mensaje" => "Empresa inactivada"]);
     }
 }
