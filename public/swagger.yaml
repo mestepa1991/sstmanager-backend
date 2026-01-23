@@ -471,7 +471,7 @@ paths:
       tags:
         - 'Seguridad - Perfiles'
       summary: 'Listar perfiles de seguridad'
-      operationId: getPerfilesList
+      operationId: getPerfilesListCustom
       parameters:
         -
           name: id_empresa
@@ -487,12 +487,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Perfil'
+                  properties: { id_perfil: { type: integer, example: 1 }, nombre_perfil: { type: string, example: Administrador }, descripcion: { type: string, example: 'Acceso total' }, estado: { type: integer, example: 1 } }
+                  type: object
     post:
       tags:
         - 'Seguridad - Perfiles'
       summary: 'Crear nuevo perfil'
-      operationId: createPerfil
+      operationId: createPerfilCustom
       requestBody:
         required: true
         content:
@@ -514,12 +515,14 @@ paths:
       responses:
         '201':
           description: Creado
+        '400':
+          description: 'Error de validación'
   '/perfiles/{id}':
     put:
       tags:
         - 'Seguridad - Perfiles'
       summary: 'Actualizar perfil'
-      operationId: updatePerfil
+      operationId: updatePerfilCustom
       parameters:
         -
           name: id
@@ -543,11 +546,13 @@ paths:
       responses:
         '200':
           description: Actualizado
+        '400':
+          description: 'Error en actualización'
     delete:
       tags:
         - 'Seguridad - Perfiles'
       summary: 'Desactivar perfil'
-      operationId: 885b69de8db836560f534225ce91a43c
+      operationId: deletePerfilCustom
       parameters:
         -
           name: id

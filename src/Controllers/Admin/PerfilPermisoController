@@ -17,21 +17,37 @@ class PerfilPermisoController extends GenericController {
     /**
      * @OA\Get(
      * path="/perfiles/{id}/permisos",
-     * operationId="getPerfilPermisos",
+     * operationId="getPerfilPermisosCustom",
      * tags={"Seguridad - Permisos"},
      * summary="Obtener matriz de permisos de un perfil",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * description="Retorna una lista de módulos con sus respectivos permisos para el ID de perfil proporcionado.",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * description="ID del perfil para consultar permisos",
+     * required=true,
+     * @OA\Schema(type="integer")
+     * ),
      * @OA\Response(
      * response=200, 
-     * description="Matriz de permisos obtenida",
-     * @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Permiso"))
+     * description="Matriz de permisos obtenida exitosamente",
+     * @OA\JsonContent(
+     * type="array",
+     * @OA\Items(
+     * @OA\Property(property="id_modulo", type="integer"),
+     * @OA\Property(property="nombre_modulo", type="string"),
+     * @OA\Property(property="ver", type="integer"),
+     * @OA\Property(property="crear", type="integer"),
+     * @OA\Property(property="editar", type="integer"),
+     * @OA\Property(property="eliminar", type="integer")
+     * )
+     * )
      * ),
-     * @OA\Response(response=500, description="Error de servidor")
+     * @OA\Response(response=500, description="Error interno del servidor")
      * )
      */
     public function getPermisos($id) {
         try {
-            // Realizamos el JOIN para que el Serializer obtenga el 'nombre_modulo'
             $sql = "SELECT p.*, m.nombre_modulo 
                     FROM perfil_permisos p 
                     INNER JOIN modulos m ON p.id_modulo = m.id_modulo 
@@ -52,24 +68,33 @@ class PerfilPermisoController extends GenericController {
     /**
      * @OA\Post(
      * path="/perfiles/{id}/permisos",
-     * operationId="savePerfilPermisos",
+     * operationId="savePerfilPermisosCustom",
      * tags={"Seguridad - Permisos"},
      * summary="Sincronizar permisos del perfil",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * required=true,
+     * @OA\Schema(type="integer")
+     * ),
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
-     * @OA\Property(property="permisos", type="array", @OA\Items(
-     * @OA\Property(property="id_modulo", type="integer"),
+     * @OA\Property(
+     * property="permisos", 
+     * type="array", 
+     * @OA\Items(
+     * @OA\Property(property="id_modulo", type="integer", example=1),
      * @OA\Property(property="ver", type="integer", example=1),
      * @OA\Property(property="crear", type="integer", example=0),
      * @OA\Property(property="editar", type="integer", example=1),
      * @OA\Property(property="eliminar", type="integer", example=0)
-     * ))
+     * )
+     * )
      * )
      * ),
-     * @OA\Response(response=200, description="Sincronización exitosa"),
-     * @OA\Response(response=400, description="Error en la transacción")
+     * @OA\Response(response=200, description="Permisos actualizados correctamente"),
+     * @OA\Response(response=400, description="Error en la validación o transacción")
      * )
      */
     public function savePermisos($id, $input = null) {
@@ -77,11 +102,9 @@ class PerfilPermisoController extends GenericController {
         
         $this->db->beginTransaction();
         try {
-            // 1. Limpiamos los permisos actuales para este perfil
             $delete = $this->db->prepare("DELETE FROM perfil_permisos WHERE id_perfil = ?");
             $delete->execute([$id]);
 
-            // 2. Insertamos la nueva matriz de permisos
             $sql = "INSERT INTO perfil_permisos (id_perfil, id_modulo, can_ver, can_crear, can_editar, can_eliminar) 
                     VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
@@ -101,7 +124,9 @@ class PerfilPermisoController extends GenericController {
             return json_encode(["ok" => true, "mensaje" => "Permisos actualizados correctamente"]);
 
         } catch (Exception $e) {
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             http_response_code(400);
             return json_encode(["error" => "Error al sincronizar: " . $e->getMessage()]);
         }
