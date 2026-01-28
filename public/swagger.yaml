@@ -381,6 +381,119 @@ paths:
       responses:
         '200':
           description: Inactivada
+  /items:
+    get:
+      tags:
+        - 'Configuración - Items'
+      summary: 'Listar items de estándares'
+      description: 'Obtiene todos los items o filtra por una categoría específica.'
+      operationId: getItemsList
+      parameters:
+        -
+          name: id_categoria
+          in: query
+          description: 'ID de la tabla padre (categoria_tipos) para filtrar'
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Operación exitosa'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties: { id: { type: integer, example: 15 }, idCategoria: { type: integer, example: 2 }, itemEstandar: { type: string, example: 1.1.2 }, item: { type: string, example: 'Pago de Seguridad Social' }, criterio: { type: string, example: 'Verificar planillas' }, modoVerificacion: { type: string, example: Documental }, estado: { type: string, example: Activo } }
+                  type: object
+    post:
+      tags:
+        - 'Configuración - Items'
+      summary: 'Crear nuevo item'
+      operationId: createItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - id_categorias
+                - item
+              properties:
+                id_categorias:
+                  description: 'ID del Padre'
+                  type: integer
+                  example: 2
+                item_estandar:
+                  type: string
+                  example: 1.1.2
+                item:
+                  type: string
+                  example: 'Nombre del requisito'
+                criterio:
+                  type: string
+                  example: 'Criterio a cumplir'
+                modo_verificacion:
+                  type: string
+                  example: Documental
+              type: object
+      responses:
+        '201':
+          description: 'Item creado correctamente'
+        '400':
+          description: 'Error de validación'
+  '/items/{id}':
+    put:
+      tags:
+        - 'Configuración - Items'
+      summary: 'Actualizar item existente'
+      operationId: updateItem
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID del item (id_detalle)'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                item_estandar:
+                  type: string
+                item:
+                  type: string
+                criterio:
+                  type: string
+                modo_verificacion:
+                  type: string
+                estado:
+                  type: string
+                  example: Activo
+              type: object
+      responses:
+        '200':
+          description: Actualizado
+        '400':
+          description: 'Error al actualizar'
+    delete:
+      tags:
+        - 'Configuración - Items'
+      summary: 'Desactivar (eliminar lógicamente) un item'
+      operationId: deleteItem
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Item desactivado'
   /modulos:
     get:
       tags:
@@ -563,6 +676,60 @@ paths:
       responses:
         '200':
           description: Desactivado
+  '/perfiles/{id}/permisos':
+    get:
+      tags:
+        - 'Seguridad - Permisos'
+      summary: 'Obtener matriz de permisos de un perfil'
+      description: 'Retorna una lista de módulos con sus respectivos permisos para el ID de perfil proporcionado.'
+      operationId: getPerfilPermisosCustom
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID del perfil para consultar permisos'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Matriz de permisos obtenida exitosamente'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties: { id_modulo: { type: integer }, nombre_modulo: { type: string }, ver: { type: integer }, crear: { type: integer }, editar: { type: integer }, eliminar: { type: integer } }
+                  type: object
+        '500':
+          description: 'Error interno del servidor'
+    post:
+      tags:
+        - 'Seguridad - Permisos'
+      summary: 'Sincronizar permisos del perfil'
+      operationId: savePerfilPermisosCustom
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                permisos:
+                  type: array
+                  items: { properties: { id_modulo: { type: integer, example: 1 }, ver: { type: integer, example: 1 }, crear: { type: integer, example: 0 }, editar: { type: integer, example: 1 }, eliminar: { type: integer, example: 0 } }, type: object }
+              type: object
+      responses:
+        '200':
+          description: 'Permisos actualizados correctamente'
+        '400':
+          description: 'Error en la validación o transacción'
   /planes:
     get:
       tags:
@@ -1051,8 +1218,14 @@ tags:
     name: 'Admin - Empresas'
     description: 'Admin - Empresas'
   -
+    name: 'Configuración - Items'
+    description: 'Configuración - Items'
+  -
     name: 'Seguridad - Perfiles'
     description: 'Seguridad - Perfiles'
+  -
+    name: 'Seguridad - Permisos'
+    description: 'Seguridad - Permisos'
   -
     name: 'Admin - Planes'
     description: 'Admin - Planes'

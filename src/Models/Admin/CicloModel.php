@@ -35,7 +35,7 @@ class CicloModel extends GenericModel {
             foreach ($ciclos as $ciclo) {
                 $stmt->execute([$ciclo]);
             }
-            echo "      🔄 Tabla 'ciclos_phva' creada y poblada.\n";
+            echo "   🔄 Tabla 'ciclos_phva' creada y poblada.\n";
         }
     }
 }

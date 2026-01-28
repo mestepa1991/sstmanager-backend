@@ -11,9 +11,17 @@ class CategoriaModel extends GenericModel {
     public function install() {
         // TABLA PADRE: CATEGORIAS
         $this->db->exec("CREATE TABLE IF NOT EXISTS categorias (
-            id INT(11) AUTO_INCREMENT PRIMARY KEY,
-            descripcion VARCHAR(255) NOT NULL,
-            estado TINYINT(1) DEFAULT 1
+        id INT(11) AUTO_INCREMENT PRIMARY KEY,
+        descripcion VARCHAR(255) NOT NULL,
+        estado TINYINT(1) DEFAULT 1,
+        id_ciclo INT(11) NOT NULL, -- Aquí está el campo de unión solicitado
+        
+        -- Definimos la llave foránea
+        CONSTRAINT fk_categoria_ciclo 
+        FOREIGN KEY (id_ciclo) 
+        REFERENCES ciclos_phva (id_ciclo)
+        ON DELETE RESTRICT 
+        ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
         // TABLA HIJA: CATEGORIA_TIPOS
