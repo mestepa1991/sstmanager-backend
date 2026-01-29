@@ -676,38 +676,27 @@ paths:
       responses:
         '200':
           description: Desactivado
-  '/perfiles/{id}/permisos':
+  '/perfiles/permisos/{id}':
     get:
       tags:
         - 'Seguridad - Permisos'
-      summary: 'Obtener matriz de permisos de un perfil'
-      description: 'Retorna una lista de módulos con sus respectivos permisos para el ID de perfil proporcionado.'
-      operationId: getPerfilPermisosCustom
+      summary: 'Listar matriz de permisos'
+      operationId: getPermisosPerfil
       parameters:
         -
           name: id
           in: path
-          description: 'ID del perfil para consultar permisos'
           required: true
           schema:
             type: integer
       responses:
         '200':
-          description: 'Matriz de permisos obtenida exitosamente'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties: { id_modulo: { type: integer }, nombre_modulo: { type: string }, ver: { type: integer }, crear: { type: integer }, editar: { type: integer }, eliminar: { type: integer } }
-                  type: object
-        '500':
-          description: 'Error interno del servidor'
+          description: Exitoso
     post:
       tags:
         - 'Seguridad - Permisos'
-      summary: 'Sincronizar permisos del perfil'
-      operationId: savePerfilPermisosCustom
+      summary: 'Guardar matriz de permisos'
+      operationId: savePermisosPerfil
       parameters:
         -
           name: id
@@ -720,16 +709,12 @@ paths:
         content:
           application/json:
             schema:
-              properties:
-                permisos:
-                  type: array
-                  items: { properties: { id_modulo: { type: integer, example: 1 }, ver: { type: integer, example: 1 }, crear: { type: integer, example: 0 }, editar: { type: integer, example: 1 }, eliminar: { type: integer, example: 0 } }, type: object }
-              type: object
+              type: array
+              items:
+                $ref: '#/components/schemas/Permiso'
       responses:
         '200':
-          description: 'Permisos actualizados correctamente'
-        '400':
-          description: 'Error en la validación o transacción'
+          description: 'Permisos guardados'
   /planes:
     get:
       tags:
@@ -1140,6 +1125,27 @@ components:
       type: object
     Permiso:
       title: 'Matriz de Permisos'
+      properties:
+        id_modulo:
+          type: integer
+          example: 10
+        modulo:
+          type: string
+          example: Ventas
+        ver:
+          description: '1=Si, 0=No'
+          type: integer
+          example: 1
+        crear:
+          type: integer
+          example: 1
+        editar:
+          type: integer
+          example: 0
+        eliminar:
+          type: integer
+          example: 0
+      type: object
     Plan:
       title: 'Plan de Suscripción'
       description: 'Define los límites comerciales y módulos permitidos para una empresa'

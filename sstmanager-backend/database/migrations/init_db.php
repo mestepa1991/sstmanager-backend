@@ -17,7 +17,7 @@ use App\Models\Admin\CicloModel;
 use App\Models\Admin\CalificacionModel;
 use App\Models\Admin\CategoriaModel;
 use App\Models\Admin\ItemModel;
-
+use App\Models\Admin\PermisoModel;
 
 $host = 'localhost';
 $user = 'root';
@@ -58,7 +58,8 @@ try {
         new CicloModel($db),
         new CalificacionModel($db),
         new CategoriaModel($db),
-        new ItemModel($db)
+        new ItemModel($db),
+        new PermisoModel($db)
     ];
 
     foreach ($modelos as $index => $modelo) {

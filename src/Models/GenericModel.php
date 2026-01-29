@@ -97,6 +97,18 @@ class GenericModel {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+
+    public function insert($data)
+{
+    $fields = array_keys($data);
+    $columns = implode(',', $fields);
+    $placeholders = ':' . implode(',:', $fields);
+
+    $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+    $stmt = $this->db->prepare($sql);
+
+    return $stmt->execute($data);
+}
     /**
  * MIGRATION: Crear tabla si no existe
  */
