@@ -715,6 +715,23 @@ paths:
       responses:
         '200':
           description: 'Permisos guardados'
+  '/perfiles/permisos/{id}/check-all':
+    get:
+      tags:
+        - 'Seguridad - Permisos'
+      summary: 'Obtener todos los permisos formateados para validación inicial'
+      operationId: getAllAccess
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID del Perfil'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Matriz de permisos optimizada'
   /planes:
     get:
       tags:
