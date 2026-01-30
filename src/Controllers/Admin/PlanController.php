@@ -20,61 +20,16 @@ class PlanController extends GenericController {
      * operationId="getPlanesList",
      * tags={"Admin - Planes"},
      * summary="Listar todos los planes",
-     * description="Ruta real: /index.php?table=planes",
-     * @OA\Response(
+     * @OA\Response( 
      * response=200, 
-     * description="Lista de planes comerciales",
+     * description="Exitoso",
      * @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Plan"))
      * )
      * )
      */
     public function getAll() {
-        $planes = $this->model->all();
-        $resultado = [];
-
-        foreach ($planes as $plan) {
-            // Buscamos los módulos asociados a este plan en la tabla intermedia
-            $sql = "SELECT m.id_modulo, m.nombre_modulo 
-                    FROM modulos m 
-                    INNER JOIN plan_modulos pm ON m.id_modulo = pm.id_modulo 
-                    WHERE pm.id_plan = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$plan['id_plan']]);
-            $modulos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            $resultado[] = PlanSerializer::toArray($plan, $modulos);
-        }
-
-        return json_encode($resultado);
-    }
-
-    /**
-     * @OA\Get(
-     * path="/planes/{id}",
-     * operationId="getPlanDetail",
-     * tags={"Admin - Planes"},
-     * summary="Obtener detalle de un plan",
-     * description="Ruta real: /index.php?table=planes&id={id}",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Detalle del plan")
-     * )
-     */
-    public function getOne($id) {
-        $plan = $this->model->find($id);
-        if (!$plan) {
-            http_response_code(404);
-            return json_encode(["error" => "Plan no encontrado"]);
-        }
-
-        $sql = "SELECT m.id_modulo, m.nombre_modulo 
-                FROM modulos m 
-                INNER JOIN plan_modulos pm ON m.id_modulo = pm.id_modulo 
-                WHERE pm.id_plan = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
-        $modulos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        return json_encode(PlanSerializer::toArray($plan, $modulos));
+        $data = $this->model->all();
+        return json_encode(PlanSerializer::toList($data));
     }
 
     /**
@@ -83,46 +38,30 @@ class PlanController extends GenericController {
      * operationId="createPlan",
      * tags={"Admin - Planes"},
      * summary="Crear un nuevo plan comercial",
-     * description="Ruta real: /index.php?table=planes (POST)",
-     * @OA\RequestBody(
+     * @OA\RequestBody( 
      * required=true,
      * @OA\JsonContent(
-     * required={"nombre_plan", "modulos"},
+     * required={"nombre_plan"},
      * @OA\Property(property="nombre_plan", type="string", example="Plan Pro"),
      * @OA\Property(property="descripcion", type="string", example="Acceso a módulos avanzados"),
      * @OA\Property(property="limite_usuarios", type="integer", example=20),
-     * @OA\Property(property="precio_mensual", type="number", example=59.90),
-     * @OA\Property(property="modulos", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     * @OA\Property(property="precio_mensual", type="number", example=59.90)
      * )
      * ),
-     * @OA\Response(response=201, description="Plan creado")
+     * @OA\Response(response=201, description="Creado"),
+     * @OA\Response(response=400, description="Error de validación")
      * )
      */
-    public function create($input) {
-        $this->db->beginTransaction();
+    public function create($input)  {
         try {
-            if (empty($input['nombre_plan'])) throw new Exception("Nombre del plan obligatorio.");
-
-            // 1. Crear registro base
-            $idPlan = $this->model->create([
-                'nombre_plan' => $input['nombre_plan'],
-                'descripcion' => $input['descripcion'] ?? '',
-                'limite_usuarios' => $input['limite_usuarios'] ?? 0,
-                'precio_mensual' => $input['precio_mensual'] ?? 0
-            ]);
-
-            // 2. Asociar módulos en tabla intermedia
-            if (isset($input['modulos']) && is_array($input['modulos'])) {
-                $stmt = $this->db->prepare("INSERT INTO plan_modulos (id_plan, id_modulo) VALUES (?, ?)");
-                foreach ($input['modulos'] as $idModulo) {
-                    $stmt->execute([$idPlan, $idModulo]);
-                }
+            if (empty($input['nombre_plan'])) {
+                throw new Exception("El nombre del plan es obligatorio");
             }
 
-            $this->db->commit();
-            return json_encode(["id" => $idPlan, "mensaje" => "Plan comercial creado exitosamente"]);
-        } catch (Exception $e) {
-            $this->db->rollBack();
+            $id = $this->model->create($input);
+            return json_encode(["id" => $id, "mensaje" => "Plan registrado correctamente"]);
+
+        } catch (Exception $e) { 
             http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
@@ -133,80 +72,66 @@ class PlanController extends GenericController {
      * path="/planes/{id}",
      * operationId="updatePlan",
      * tags={"Admin - Planes"},
-     * summary="Actualización total del plan",
-     * description="Ruta real: /index.php?table=planes&id={id} (PUT)",
+     * summary="Actualizar plan",
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Plan")),
-     * @OA\Response(response=200, description="Plan actualizado")
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * @OA\Property(property="nombre_plan", type="string"),
+     * @OA\Property(property="descripcion", type="string"),
+     * @OA\Property(property="estado", type="integer")
+     * )
+     * ),
+     * @OA\Response(response=200, description="Actualizado"),
+     * @OA\Response(response=400, description="Error en actualización")
      * )
      */
-    public function update($id, $input) {
-        $this->db->beginTransaction();
-        try {
-            // Actualizar datos de la tabla maestra
-            $datos = [
-                'nombre_plan' => $input['nombre_plan'] ?? null,
-                'descripcion' => $input['descripcion'] ?? null,
-                'limite_usuarios' => $input['limite_usuarios'] ?? null,
-                'precio_mensual' => $input['precio_mensual'] ?? null,
-                'estado' => $input['estado'] ?? null
-            ];
-            $datos = array_filter($datos, fn($v) => $v !== null);
-            $this->model->update($id, $datos);
-
-            // Sincronizar módulos (Borrar y Reinsertar)
-            if (isset($input['modulos']) && is_array($input['modulos'])) {
-                $this->db->prepare("DELETE FROM plan_modulos WHERE id_plan = ?")->execute([$id]);
-                $stmt = $this->db->prepare("INSERT INTO plan_modulos (id_plan, id_modulo) VALUES (?, ?)");
-                foreach ($input['modulos'] as $idModulo) {
-                    $stmt->execute([$id, $idModulo]);
-                }
-            }
-
-            $this->db->commit();
-            return json_encode(["ok" => true, "mensaje" => "Plan y módulos actualizados"]);
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            http_response_code(400);
-            return json_encode(["error" => $e->getMessage()]);
+   public function update($id, $input) {
+    try {
+        // Aseguramos que solo se envíen campos que existan en la tabla planes
+        $success = $this->model->update($id, $input);
+        
+        if (!$success) {
+            http_response_code(500);
+            return json_encode([
+                "ok" => false, 
+                "error" => "No se pudo actualizar. Verifique que los campos coincidan con la base de datos."
+            ]);
         }
-    }
 
-    /**
-     * @OA\Patch(
-     * path="/planes/{id}",
-     * operationId="patchPlan",
-     * tags={"Admin - Planes"},
-     * summary="Actualización parcial",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Actualizado")
-     * )
-     */
-    public function patch($id, $input) {
-        return $this->update($id, $input);
+        return json_encode([
+            "ok" => true, 
+            "mensaje" => "Plan actualizado correctamente",
+            "filas_afectadas" => $success
+        ]);
+
+    } catch (Exception $e) { 
+        http_response_code(400);
+        return json_encode(["error" => $e->getMessage()]);
     }
+   }
 
     /**
      * @OA\Delete(
      * path="/planes/{id}",
      * operationId="deletePlan",
      * tags={"Admin - Planes"},
-     * summary="Desactivar plan",
-     * description="Ruta real: /index.php?table=planes&id={id} (DELETE)",
+     * summary="Desactivar plan", 
      * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Response(response=200, description="Desactivado")
      * )
      */
     public function delete($id) {
-        // Validar si hay empresas activas con este plan
+        // Validación de seguridad: No desactivar si hay empresas vinculadas (opcional pero recomendado)
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM empresas WHERE id_plan = ? AND estado = 1");
         $stmt->execute([$id]);
+        
         if ($stmt->fetchColumn() > 0) {
-            http_response_code(409);
-            return json_encode(["error" => "No se puede desactivar un plan con empresas activas vinculadas."]);
+            http_response_code(400);
+            return json_encode(["error" => "No se puede desactivar un plan con empresas activas"]);
         }
 
         $success = $this->model->update($id, ['estado' => 0]);
-        return json_encode(["ok" => $success, "mensaje" => "Plan comercial inactivado"]);
+        return json_encode(["ok" => $success, "mensaje" => "Plan comercial desactivado"]);
     }
 }

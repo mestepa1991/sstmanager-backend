@@ -12,8 +12,22 @@ class GenericModel {
     public function __construct($db, $table) {
         $this->db = $db;
         $this->table = $table;
-        // Definimos la PK: si es la tabla usuarios es id_usuario, sino id
-        $this->primaryKey = ($this->table === 'usuarios') ? 'id_usuario' : 'id';
+        
+        // 1. DEFINICIÓN DINÁMICA DE LLAVE PRIMARIA
+        // Detecta automáticamente la PK según la tabla para evitar errores SQL
+        if ($this->table === 'usuarios') {
+            $this->primaryKey = 'id_usuario';
+        } elseif ($this->table === 'planes') {
+            $this->primaryKey = 'id_plan';
+        } elseif ($this->table === 'perfiles') {
+            $this->primaryKey = 'id_perfil';
+        }elseif ($this->table === 'modulos') {
+            $this->primaryKey = 'id_modulo';
+        }  else {
+
+        
+            $this->primaryKey = 'id';
+        }
     }
 
     /**
@@ -38,104 +52,95 @@ class GenericModel {
     }
 
     /**
-     * CREATE: Insertar un nuevo registro
+     * CREATE: Insertar registro(s) con soporte para inserción masiva
      */
     public function create($data) {
-        // 1. Prepara las columnas y valores
+        // Soporte para Bulk Insert (necesario para sincronizar permisos)
+        if (isset($data[0]) && is_array($data[0])) {
+            $ids = [];
+            try {
+                $this->db->beginTransaction();
+                foreach ($data as $row) {
+                    $ids[] = $this->create($row);
+                }
+                $this->db->commit();
+                return $ids;
+            } catch (\PDOException $e) {
+                $this->db->rollBack();
+                throw $e; 
+            }
+        }
+
         $keys = implode(", ", array_keys($data));
         $values = array_values($data);
         $placeholders = implode(", ", array_fill(0, count($values), "?"));
 
         $sql = "INSERT INTO {$this->table} ($keys) VALUES ($placeholders)";
 
-        // 2. Aquí es donde ponemos la trampa para ver el error
         try {
             $stmt = $this->db->prepare($sql);
             $stmt->execute($values);
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
-            // ¡ESTO ES LO QUE TE MOSTRARÁ EL ERROR EN SWAGGER!
-            die(json_encode([
-                "error_critico" => "Fallo SQL en GenericModel",
-                "mensaje" => $e->getMessage(),
-                "sql_intentado" => $sql
-            ]));
+            throw new Exception("Error en Insert: " . $e->getMessage());
         }
     }
 
     /**
-     * UPDATE: Actualizar un registro existente
+     * UPDATE: Actualizar registro usando la PK dinámica
+     * Corrige el error 500 al mapear correctamente id_plan/id_perfil
      */
     public function update($id, $data) {
         try {
-            $fields = "";
+            $fields = array_map(fn($key) => "$key = :$key", array_keys($data));
+            $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE {$this->primaryKey} = :pk_id";
+            
+            $stmt = $this->db->prepare($sql);
+            
             foreach ($data as $key => $value) {
-                $fields .= "$key = :$key, ";
+                $stmt->bindValue(":$key", $value);
             }
-            $fields = rtrim($fields, ", ");
-
-            $query = "UPDATE " . $this->table . " SET $fields WHERE {$this->primaryKey} = :id";
-            $stmt = $this->db->prepare($query);
-
-            foreach ($data as $key => $val) {
-                $stmt->bindValue(':' . $key, $val);
-            }
-            $stmt->bindValue(':id', $id);
-
+            $stmt->bindValue(":pk_id", $id);
+            
             return $stmt->execute();
-        } catch (Exception $e) {
-            return false;
+            
+        } catch (\PDOException $e) {
+            error_log("Error SQL en {$this->table}: " . $e->getMessage());
+            throw new Exception("Fallo al actualizar: " . $e->getMessage());
         }
     }
 
     /**
-     * DELETE: Eliminar un registro
+     * DELETE: Eliminar un registro usando la PK dinámica
      */
     public function delete($id) {
         $query = "DELETE FROM " . $this->table . " WHERE {$this->primaryKey} = :id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute();
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id);
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            throw new Exception("Error al eliminar: " . $e->getMessage());
+        }
     }
 
-    public function insert($data)
-{
-    $fields = array_keys($data);
-    $columns = implode(',', $fields);
-    $placeholders = ':' . implode(',:', $fields);
-
-    $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
-    $stmt = $this->db->prepare($sql);
-
-    return $stmt->execute($data);
-}
     /**
- * MIGRATION: Crear tabla si no existe
- */
-public function createTable(array $fields): void
-{
-    if (empty($fields)) {
-        throw new Exception("No se definieron campos para la tabla {$this->table}");
+     * MIGRATION: Crear tabla si no existe
+     */
+    public function createTable(array $fields): void {
+        $primaryKeyDef = "{$this->primaryKey} INT AUTO_INCREMENT PRIMARY KEY";
+        $columns = [$primaryKeyDef];
+
+        foreach ($fields as $name => $definition) {
+            $columns[] = "$name $definition";
+        }
+
+        $sql = sprintf(
+            "CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+            $this->table,
+            implode(', ', $columns)
+        );
+
+        $this->db->prepare($sql)->execute();
     }
-
-    // PK dinámica según tu convención
-    $primaryKey = ($this->table === 'usuarios')
-        ? 'id_usuario INT AUTO_INCREMENT PRIMARY KEY'
-        : 'id INT AUTO_INCREMENT PRIMARY KEY';
-
-    $columns = [$primaryKey];
-
-    foreach ($fields as $name => $definition) {
-        $columns[] = "$name $definition";
-    }
-
-    $sql = sprintf(
-        "CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-        $this->table,
-        implode(', ', $columns)
-    );
-
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute();
-}
 }

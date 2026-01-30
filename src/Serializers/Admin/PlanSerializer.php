@@ -4,40 +4,31 @@ namespace App\Serializers\Admin;
 use OpenApi\Annotations as OA;
 
 /**
- * @OA\Schema(
- * schema="Plan",
- * title="Plan de Suscripción",
- * description="Define los límites comerciales y módulos permitidos para una empresa"
- * )
+ * @OA\Schema(schema="Plan", title="Plan de Suscripción")
  */
 class PlanSerializer {
 
-    public static function toArray($data, $modulos = []) {
-        if (!$data) return null;
+    /** @OA\Property(type="integer", example=1) */
+    public $id_plan;
 
+    /** @OA\Property(type="string", example="Profesional") */
+    public $nombre_plan;
+
+    public static function toArray($data) {
+        if (!$data) return null;
+        
         return [
-            'id' => (int)$data['id_plan'],
-            'nombre' => $data['nombre_plan'],
-            'descripcion' => $data['descripcion'] ?? '',
-            'configuracion' => [
-                'limite_usuarios' => (int)$data['limite_usuarios'] === 0 ? 'Ilimitado' : (int)$data['limite_usuarios'],
-                'precio_mensual' => (float)$data['precio_mensual'],
-                'estado' => (bool)($data['estado'] ?? 1)
-            ],
-            'modulos_permitidos' => array_map(function($m) {
-                return [
-                    'id' => (int)$m['id_modulo'],
-                    'nombre' => $m['nombre_modulo']
-                ];
-            }, $modulos)
+            'id_plan'         => (int)$data['id_plan'],
+            'nombre_plan'     => $data['nombre_plan'],
+            'descripcion'     => $data['descripcion'] ?? '',
+            'limite_usuarios' => (int)$data['limite_usuarios'],
+            'precio_mensual'  => (float)($data['precio_mensual'] ?? 0),
+            'estado'          => (int)($data['estado'] ?? 1),
+            'etiqueta_limite' => (int)$data['limite_usuarios'] === 0 ? 'Ilimitado' : $data['limite_usuarios'] . ' Usuarios'
         ];
     }
 
     public static function toList($dataList) {
-        // En una lista simple, a veces no queremos traer todos los módulos 
-        // para ahorrar ancho de banda, pero aquí los incluiremos si vienen en la data
-        return array_map(function($item) {
-            return self::toArray($item, $item['modulos'] ?? []);
-        }, $dataList);
+        return array_map([self::class, 'toArray'], $dataList);
     }
 }

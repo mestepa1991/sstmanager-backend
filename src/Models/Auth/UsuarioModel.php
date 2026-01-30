@@ -21,7 +21,7 @@ class UsuarioModel extends GenericModel {
             password VARCHAR(255) NOT NULL,
             rol ENUM('Master', 'Administrador', 'Usuario', 'Soporte') NOT NULL DEFAULT 'Usuario',
             id_empresa INT(11) NULL, 
-            id_perfil INT(11) NOT NULL,
+            id_perfil INT(11)  NULL,
             estado TINYINT(1) DEFAULT 1,
             fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";

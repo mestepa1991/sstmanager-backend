@@ -114,8 +114,17 @@ class PerfilController extends GenericController {
      */
     public function update($id, $input) {
         try {
+            // 1. DEPUREMOS: ¿Qué está llegando?
+            // var_dump($id); var_dump($input); die(); 
+
             $success = $this->model->update($id, $input);
-            return json_encode(["ok" => $success, "mensaje" => "Actualizado correctamente"]);
+            
+            return json_encode([
+                "ok" => true, 
+                "mensaje" => "Actualizado correctamente",
+                "debug_id" => $id,
+                "filas_afectadas" => $success // Esto nos dirá si realmente tocó algo
+            ]);
 
         } catch (Exception $e) {
             http_response_code(400);

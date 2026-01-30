@@ -83,13 +83,11 @@ class UsuarioController extends GenericController {
      * @OA\Response(response=201, description="Usuario creado con éxito")
      * )
      */
-    public function create($input) {      
+   public function create($input) {      
         try {
             // --- LIMPIEZA DE DATOS ---
-            // Quitamos el ID para que no se envíe al INSERT
             unset($input['id']);
             unset($input['id_usuario']); 
-            // -------------------------
 
             if (empty($input['email']) || empty($input['password']) || empty($input['numero_documento'])) {
                 throw new Exception("Email, Documento y password son obligatorios.");
@@ -99,34 +97,47 @@ class UsuarioController extends GenericController {
                 throw new Exception("El formato del correo electrónico no es válido.");
             }
 
-            // 2. Preparación de datos
-            // Asegúrate de que el rol coincida con los valores ENUM de tu base de datos ('master', 'usuario', etc.)
+            // Encriptación
             $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
 
-            // Ajuste de empresa según rol
+            // --- LÓGICA DE ROL APLICADA A EMPRESA Y PERFIL ---
             if (in_array($input['rol'], ['master', 'soporte'])) {
+                // Usuarios de alto nivel no pertenecen a una empresa específica
                 $input['id_empresa'] = null; 
-            } elseif (empty($input['id_empresa'])) {
-                throw new Exception("Usuarios de cliente deben tener una empresa asignada.");
+                
+                // Si para estos roles el perfil es opcional o fijo, lo forzamos a null 
+                // o a un ID específico si tu base de datos lo requiere.
+                // Aquí lo ponemos null siguiendo la lógica de la empresa.
+                $input['id_perfil'] = !empty($input['id_perfil']) ? $input['id_perfil'] : null;
+
+            } else {
+                // Usuarios normales DEBEN tener empresa y perfil
+                if (empty($input['id_empresa'])) {
+                    throw new Exception("Usuarios de cliente deben tener una empresa asignada.");
+                }
+                if (empty($input['id_perfil'])) {
+                    throw new Exception("Usuarios de cliente deben tener un perfil de accesos asignado.");
+                }
             }
 
             // 3. Intento de Creación
             $id = $this->model->create($input);
 
-            // 4. VERIFICACIÓN REAL (Aquí estaba el fallo)
             if (!$id) {
-                // Si el ID es false, lanzamos error para ver qué pasó en la BD
                 throw new Exception("Error al insertar en BD. Verifique que el correo o documento no estén duplicados.");
             }
 
-            return json_encode(["id" => $id, "mensaje" => "Usuario registrado correctamente con el email: " . $input['email']]);
+            return json_encode([
+                "ok" => true,
+                "id" => $id, 
+                "mensaje" => "Usuario registrado correctamente con el email: " . $input['email']
+            ]);
 
         } catch (Exception $e) {
             http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
-    }
-
+    } 
     /**
      * @OA\Put(
      * path="/index.php?table=usuarios&id={id}",

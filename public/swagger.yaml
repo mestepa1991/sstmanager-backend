@@ -720,11 +720,10 @@ paths:
       tags:
         - 'Admin - Planes'
       summary: 'Listar todos los planes'
-      description: 'Ruta real: /index.php?table=planes'
       operationId: getPlanesList
       responses:
         '200':
-          description: 'Lista de planes comerciales'
+          description: Exitoso
           content:
             application/json:
               schema:
@@ -735,7 +734,6 @@ paths:
       tags:
         - 'Admin - Planes'
       summary: 'Crear un nuevo plan comercial'
-      description: 'Ruta real: /index.php?table=planes (POST)'
       operationId: createPlan
       requestBody:
         required: true
@@ -744,7 +742,6 @@ paths:
             schema:
               required:
                 - nombre_plan
-                - modulos
               properties:
                 nombre_plan:
                   type: string
@@ -758,36 +755,17 @@ paths:
                 precio_mensual:
                   type: number
                   example: 59.9
-                modulos:
-                  type: array
-                  items: { type: integer }
-                  example: [1, 2, 3]
               type: object
       responses:
         '201':
-          description: 'Plan creado'
+          description: Creado
+        '400':
+          description: 'Error de validación'
   '/planes/{id}':
-    get:
-      tags:
-        - 'Admin - Planes'
-      summary: 'Obtener detalle de un plan'
-      description: 'Ruta real: /index.php?table=planes&id={id}'
-      operationId: getPlanDetail
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: 'Detalle del plan'
     put:
       tags:
         - 'Admin - Planes'
-      summary: 'Actualización total del plan'
-      description: 'Ruta real: /index.php?table=planes&id={id} (PUT)'
+      summary: 'Actualizar plan'
       operationId: updatePlan
       parameters:
         -
@@ -801,15 +779,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Plan'
+              properties:
+                nombre_plan:
+                  type: string
+                descripcion:
+                  type: string
+                estado:
+                  type: integer
+              type: object
       responses:
         '200':
-          description: 'Plan actualizado'
+          description: Actualizado
+        '400':
+          description: 'Error en actualización'
     delete:
       tags:
         - 'Admin - Planes'
       summary: 'Desactivar plan'
-      description: 'Ruta real: /index.php?table=planes&id={id} (DELETE)'
       operationId: deletePlan
       parameters:
         -
@@ -821,11 +807,12 @@ paths:
       responses:
         '200':
           description: Desactivado
-    patch:
+  '/planes/permisos/{id}':
+    get:
       tags:
         - 'Admin - Planes'
-      summary: 'Actualización parcial'
-      operationId: patchPlan
+      summary: 'Listar matriz de accesos por plan'
+      operationId: getAccesosPlan
       parameters:
         -
           name: id
@@ -835,7 +822,30 @@ paths:
             type: integer
       responses:
         '200':
-          description: Actualizado
+          description: Exitoso
+    post:
+      tags:
+        - 'Admin - Planes'
+      summary: 'Guardar matriz de accesos del plan (Sincronización completa)'
+      operationId: saveAccesosPlan
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PlanAcceso'
+      responses:
+        '200':
+          description: 'Accesos sincronizados'
   '/index.php?action=login':
     post:
       tags:
@@ -1148,7 +1158,28 @@ components:
       type: object
     Plan:
       title: 'Plan de Suscripción'
-      description: 'Define los límites comerciales y módulos permitidos para una empresa'
+      properties:
+        id_plan:
+          type: integer
+          example: 1
+        nombre_plan:
+          type: string
+          example: Profesional
+      type: object
+    PlanAcceso:
+      title: 'Matriz de Accesos por Plan'
+      properties:
+        id_plan:
+          type: integer
+          example: 1
+        id_modulo:
+          type: integer
+          example: 10
+        ver:
+          description: '1=Si, 0=No'
+          type: integer
+          example: 1
+      type: object
     Usuario:
       title: 'Modelo de Usuario'
       description: 'Esquema que representa a un usuario dentro del ecosistema Multi-tenant'

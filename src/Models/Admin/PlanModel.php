@@ -2,6 +2,7 @@
 namespace App\Models\Admin;
 
 use App\Models\GenericModel;
+
 class PlanModel extends GenericModel {
     
     public function __construct($db) {
@@ -22,34 +23,29 @@ class PlanModel extends GenericModel {
 
         $this->db->exec($sqlPlanes);
 
-        // 2. Tabla Intermedia: Relación Plan <-> Módulos
-        // Aquí definimos qué "paquete" tiene qué "herramientas"
-        $sqlPlanModulos = "CREATE TABLE IF NOT EXISTS plan_modulos (
-            id_plan INT(11) NOT NULL,
-            id_modulo INT(11) NOT NULL,
-            PRIMARY KEY (id_plan, id_modulo),
-            CONSTRAINT fk_pm_plan FOREIGN KEY (id_plan) 
-                REFERENCES planes(id_plan) ON DELETE CASCADE,
-            CONSTRAINT fk_pm_modulo FOREIGN KEY (id_modulo) 
-                REFERENCES modulos(id_modulo) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-
-        $this->db->exec($sqlPlanModulos);
-
-        // 3. Insertar datos iniciales
+        // 2. Insertar datos iniciales (Seed)
         $this->seedPlanes();
     }
 
+    /**
+     * Inserta los planes iniciales siguiendo la lógica de validación de PerfilModel
+     */
     private function seedPlanes() {
-        $check = $this->db->query("SELECT COUNT(*) FROM planes")->fetchColumn();
-        if ($check == 0) {
-            // Creamos 3 niveles comerciales típicos
-            $this->db->exec("INSERT INTO planes (nombre_plan, descripcion, limite_usuarios, precio_mensual) VALUES 
-                ('Básico', 'Ideal para microempresas', 5, 0.00),
-                ('Profesional', 'Para empresas en crecimiento', 20, 49.90),
-                ('Enterprise', 'Sin límites de gestión', 0, 120.00)");
-            
-            echo "      (📦 Planes comerciales iniciales creados)\n";
+        // Definimos los planes semilla
+        $planesSemilla = [
+            ['Básico', 'Ideal para microempresas', 5, 0.00],
+            ['Profesional', 'Para empresas en crecimiento', 20, 49.90],
+            ['Enterprise', 'Sin límites de gestión', 0, 120.00]
+        ];
+
+        $stmtCheck = $this->db->prepare("SELECT COUNT(*) FROM planes WHERE nombre_plan = ?");
+        $stmtInsert = $this->db->prepare("INSERT INTO planes (nombre_plan, descripcion, limite_usuarios, precio_mensual) VALUES (?, ?, ?, ?)");
+
+        foreach ($planesSemilla as $plan) {
+            $stmtCheck->execute([$plan[0]]);
+            if ($stmtCheck->fetchColumn() == 0) {
+                $stmtInsert->execute($plan);
+            }
         }
     }
 }

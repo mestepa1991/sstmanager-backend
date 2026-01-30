@@ -75,18 +75,26 @@ class GenericController {
     public function update($id, $input) {
         if (!$id || empty($input)) {
             http_response_code(400);
-            return json_encode(["error" => "ID o datos faltantes para actualizar"]);
+            return json_encode(["ok" => false, "error" => "ID o datos faltantes"]);
         }
 
+        // Delegamos la responsabilidad al modelo
         $success = $this->model->update($id, $input);
+        
         if ($success) {
-            return json_encode(["mensaje" => "Registro actualizado correctamente"]);
+            return json_encode([
+                "ok" => true, 
+                "mensaje" => "Registro actualizado correctamente en {$this->table}"
+            ]);
         }
 
         http_response_code(500);
-        return json_encode(["error" => "Error al actualizar en la tabla {$this->table}"]);
+        return json_encode([
+            "ok" => false, 
+            "error" => "No se pudo actualizar. Verifique que los campos coincidan con la base de datos."
+        ]);
     }
-
+    
     public function delete($id) {
         if (!$id) {
             http_response_code(400);
