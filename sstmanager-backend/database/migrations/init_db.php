@@ -19,6 +19,7 @@ use App\Models\Admin\CategoriaModel;
 use App\Models\Admin\ItemModel;
 use App\Models\Admin\PermisoModel;
 use App\Models\Admin\PlanmodulosModel;
+use App\Models\Admin\TipoempresaModel;
 
 $host = 'localhost';
 $user = 'root';
@@ -61,7 +62,8 @@ try {
         new CategoriaModel($db),
         new ItemModel($db),
         new PermisoModel($db),
-        new PlanmodulosModel($db)
+        new PlanmodulosModel($db),
+        new TipoempresaModel($db)
     ];
 
     foreach ($modelos as $index => $modelo) {

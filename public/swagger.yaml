@@ -863,6 +863,57 @@ paths:
       responses:
         '200':
           description: 'Accesos sincronizados'
+  /tipo-empresa:
+    get:
+      tags:
+        - 'Admin - Catálogos'
+      summary: 'Listar tipos de empresa configurados'
+      operationId: getTipoEmpresaList
+      responses:
+        '200':
+          description: Exitoso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TipoEmpresa'
+    post:
+      tags:
+        - 'Admin - Catálogos'
+      summary: 'Crear nueva configuración de tipo de empresa'
+      operationId: createTipoEmpresa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - tamano_empresa
+                - sector
+                - empleados_desde
+                - empleados_hasta
+              properties:
+                tamano_empresa:
+                  type: string
+                  enum: [Micro, Pequeña, Mediana, Grande]
+                sector:
+                  description: 'Campo APLICACIÓN en formulario'
+                  type: string
+                cantidad_sede:
+                  description: 'Campo CANTIDAD POR SEDE'
+                  type: integer
+                empleados_desde:
+                  type: integer
+                empleados_hasta:
+                  type: integer
+                estado:
+                  type: integer
+                  example: 1
+              type: object
+      responses:
+        '201':
+          description: Creado
   '/index.php?action=login':
     post:
       tags:
@@ -1196,6 +1247,37 @@ components:
           description: '1=Si, 0=No'
           type: integer
           example: 1
+      type: object
+    TipoEmpresa:
+      title: 'Configuración de Tipo de Empresa'
+      description: 'Esquema para la clasificación de empresas por tamaño y rango de empleados'
+      properties:
+        id_config:
+          type: integer
+          example: 1
+        tamano_empresa:
+          type: string
+          enum:
+            - Micro
+            - Pequeña
+            - Mediana
+            - Grande
+          example: Micro
+        empleados_desde:
+          description: 'Límite inferior de empleados'
+          type: integer
+          example: 1
+        empleados_hasta:
+          description: 'Límite superior de empleados'
+          type: integer
+          example: 10
+        estado:
+          description: '1: Activo, 0: Inactivo'
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          example: '2023-10-27 10:00:00'
       type: object
     Usuario:
       title: 'Modelo de Usuario'

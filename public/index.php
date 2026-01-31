@@ -4,8 +4,8 @@ use App\Controllers\Auth\AuthController;
 use App\Controllers\Auth\UsuarioController;
 use App\Controllers\Admin\PerfilController;
 use App\Controllers\Admin\PermisoController; 
-// use App\Controllers\Admin\PlanesController; // Descomenta si creas un controlador específico para Planes CRUD
-use App\Controllers\Admin\PlanModulosController; // <--- Este controla la matriz (planes/permisos)
+use App\Controllers\Admin\PlanModulosController;
+use App\Controllers\Admin\TipoempresaController; 
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -26,20 +26,14 @@ $db = $database->getConnection();
 
 // 3. CAPTURA DE RUTA
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$uriSegments = explode('/', trim($uri, '/'));
-
-// Ajuste para localhost/carpeta/public/tabla/accion/id
-// Detectamos dinámicamente si estamos en subcarpetas
-$scriptPath = dirname($_SERVER['SCRIPT_NAME']); // ej: /sstmanager-backend/public
-$requestPath = str_replace($scriptPath, '', $uri); // ej: /planes/permisos/1
-$pathSegments = explode('/', trim($requestPath, '/'));
-
-// Asignación de variables basada en la ruta limpia
+$scriptPath = dirname($_SERVER['SCRIPT_NAME']); 
+$requestPath = str_replace($scriptPath, '', $uri); 
+$pathSegments = explode('/', trim($requestPath, '/')); 
+ 
 $table  = $_GET['table']  ?? ($pathSegments[0] ?? null);
 $action = $_GET['action'] ?? ($pathSegments[1] ?? null);
 $id     = $_GET['id']     ?? ($pathSegments[2] ?? null);
-
-// Si la "accion" es numérica, entonces es un ID (ej: /planes/1)
+ 
 if (is_numeric($action)) {
     $id = $action;
     $action = null;
@@ -64,11 +58,9 @@ try {
     }
 
     // =======================================================
-    // BLOQUE 1: PERFILES (Estructura Base)
+    // BLOQUE 1: PERFILES
     // =======================================================
-    
-    // 1.1 PERMISOS DE PERFIL (/perfiles/permisos/{id})
-    if ($table === 'perfiles' && $action === 'permisos') {
+    if ($table === 'perfiles' && $action === 'permisos') { 
         $controller = new PermisoController($db);
         echo match ($method) {
             'GET'         => $controller->getPermisos($id),
@@ -79,8 +71,7 @@ try {
         exit;
     }
 
-    // 1.2 CRUD DE PERFILES (/perfiles)
-    if ($table === 'perfiles') {
+    if ($table === 'perfiles') { 
         $controller = new PerfilController($db);
         echo match ($method) {
             'GET'    => $id ? $controller->getAll($id) : $controller->getAll(), 
@@ -93,37 +84,36 @@ try {
     }
 
     // =======================================================
-    // BLOQUE 2: PLANES (Estructura Espejo a Perfiles)
+    // BLOQUE 2: PLANES Y MATRIZ
     // =======================================================
-
-    // 2.1 PERMISOS DE PLANES (/planes/permisos/{id})
-    // Usa PlanModulosController (la tabla pivote)
     if ($table === 'planes' && $action === 'permisos') {
         $controller = new PlanModulosController($db);
-        
         echo match ($method) {
-            'GET'         => $controller->getPermisos($id), // Lee la matriz
-            'POST', 'PUT' => $controller->savePermisos($id, $input), // Guarda la matriz (Sync)
+            'GET'         => $controller->getPermisos($id),
+            'POST', 'PUT' => $controller->savePermisos($id, $input),
             default       => throw new Exception("Método no permitido para permisos de planes", 405)
         };
         exit;
     }
 
-    // 2.2 CRUD DE PLANES (/planes)
-    // Nota: Si no tienes un PlanesController específico, el Fallback Genérico abajo lo manejará.
-    // Si lo tienes, descomenta y úsalo aquí.
-    /*
-    if ($table === 'planes') {
-        $controller = new PlanesController($db); 
-        // ... lógica standard ...
+    // =======================================================
+    // BLOQUE 3: TIPO DE EMPRESA (Configuración Basada en Formulario)
+    // =======================================================
+    if ($table === 'tipo-empresa') {
+        $controller = new TipoempresaController($db);
+        echo match ($method) {
+            'GET'    => $controller->getAll(), // Usa el Serializer para dar formato al Switch y Rangos
+            'POST'   => $controller->create($input),
+            'PUT'    => $controller->update($id, $input),
+            'DELETE' => $controller->delete($id),
+            default  => throw new Exception("Método no soportado para tipo-empresa", 405)
+        };
         exit;
     }
-    */
 
     // =======================================================
-    // BLOQUE 3: OTROS CONTROLADORES
+    // BLOQUE 4: USUARIOS
     // =======================================================
-
     if ($table === 'usuarios') {
         $controller = new UsuarioController($db); 
         echo match ($method) {
@@ -137,29 +127,17 @@ try {
     }
 
     // --- FALLBACK GENÉRICO ---
-    // Maneja: /planes, /modulos, /ciclos, etc. si no tienen controlador propio
     $controller = new App\Controllers\GenericController($db, $table);
     echo $controller->handleRequest($method, $id, $input);
 
 } catch (Exception $e) {
-    // =======================================================
-    // MANEJO DE ERRORES SEGURO (Fix para pantalla naranja)
-    // =======================================================
-    
-    $exCode = $e->getCode(); // Puede ser string ('42S22') o int
-
-    // Validamos que sea un código HTTP válido (100-599). Si no, usamos 500.
-    if (is_int($exCode) && $exCode >= 100 && $exCode <= 599) {
-        $httpCode = $exCode;
-    } else {
-        $httpCode = 500;
-    }
+    $exCode = $e->getCode();
+    $httpCode = (is_int($exCode) && $exCode >= 100 && $exCode <= 599) ? $exCode : 500;
 
     http_response_code($httpCode);
-    
     echo json_encode([
         "status" => $httpCode,
         "error"  => $e->getMessage(),
-        "debug_code" => $exCode // Muestra el código SQL original para depurar
+        "debug_code" => $exCode
     ]);
 }
