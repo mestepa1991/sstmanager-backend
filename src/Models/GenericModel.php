@@ -12,22 +12,20 @@ class GenericModel {
     public function __construct($db, $table) {
         $this->db = $db;
         $this->table = $table;
-        
-        // 1. DEFINICIÓN DINÁMICA DE LLAVE PRIMARIA
-        // Detecta automáticamente la PK según la tabla para evitar errores SQL
-        if ($this->table === 'usuarios') {
-            $this->primaryKey = 'id_usuario';
-        } elseif ($this->table === 'planes') {
-            $this->primaryKey = 'id_plan';
-        } elseif ($this->table === 'perfiles') {
-            $this->primaryKey = 'id_perfil';
-        }elseif ($this->table === 'modulos') {
-            $this->primaryKey = 'id_modulo';
-        }  else {
 
-        
-            $this->primaryKey = 'id';
-        }
+        // ✅ DEFINICIÓN DINÁMICA DE LLAVE PRIMARIA (con tipo_empresa incluido)
+        // Recomendado: mapa para evitar muchos elseif y futuros olvidos
+        $pkMap = [
+            'usuarios'     => 'id_usuario',
+            'planes'       => 'id_plan',
+            'perfiles'     => 'id_perfil',
+            'modulos'      => 'id_modulo',
+            'tipo_empresa' => 'id_config',
+            'item' => 'id_detalle',
+
+        ];
+
+        $this->primaryKey = $pkMap[$this->table] ?? 'id';
     }
 
     /**
@@ -67,7 +65,7 @@ class GenericModel {
                 return $ids;
             } catch (\PDOException $e) {
                 $this->db->rollBack();
-                throw $e; 
+                throw $e;
             }
         }
 
@@ -88,22 +86,25 @@ class GenericModel {
 
     /**
      * UPDATE: Actualizar registro usando la PK dinámica
-     * Corrige el error 500 al mapear correctamente id_plan/id_perfil
      */
     public function update($id, $data) {
         try {
+            if (empty($data) || !is_array($data)) {
+                throw new Exception("Datos vacíos para actualizar.");
+            }
+
             $fields = array_map(fn($key) => "$key = :$key", array_keys($data));
             $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE {$this->primaryKey} = :pk_id";
-            
+
             $stmt = $this->db->prepare($sql);
-            
+
             foreach ($data as $key => $value) {
                 $stmt->bindValue(":$key", $value);
             }
             $stmt->bindValue(":pk_id", $id);
-            
+
             return $stmt->execute();
-            
+
         } catch (\PDOException $e) {
             error_log("Error SQL en {$this->table}: " . $e->getMessage());
             throw new Exception("Fallo al actualizar: " . $e->getMessage());

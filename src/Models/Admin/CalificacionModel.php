@@ -2,33 +2,24 @@
 namespace App\Models\Admin;
 
 use App\Models\GenericModel;
+use PDO;
 
 class CalificacionModel extends GenericModel {
-    
+
     public function __construct($db) {
-        // Por defecto, este modelo gestiona la tabla PADRE
         parent::__construct($db, 'calificaciones');
     }
 
-    /**
-     * Instala TODA la estructura (Padre e Hija)
-     */
     public function install() {
-        // ---------------------------------------------------------
-        // 1. TABLA PADRE: 'calificaciones'
-        // ---------------------------------------------------------
         $sqlPadre = "CREATE TABLE IF NOT EXISTS calificaciones (
             id_calificacion INT(11) AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(150) NOT NULL,
             estado VARCHAR(20) DEFAULT 'Activo',
             fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
-        
+
         $this->db->exec($sqlPadre);
 
-        // ---------------------------------------------------------
-        // 2. TABLA HIJA: 'calificaciones_detalles'
-        // ---------------------------------------------------------
         $sqlHija = "CREATE TABLE IF NOT EXISTS calificaciones_detalles (
             id_detalle INT(11) AUTO_INCREMENT PRIMARY KEY,
             id_calificacion INT(11) NOT NULL,
@@ -37,41 +28,87 @@ class CalificacionModel extends GenericModel {
             estado VARCHAR(20) DEFAULT 'Activo',
             fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
-        
+
         $this->db->exec($sqlHija);
 
-        // ---------------------------------------------------------
-        // 3. RELACIÓN (Foreign Key)
-        // ---------------------------------------------------------
         $this->checkAndAddForeignKey(
-            'fk_detalle_calificacion', // Nombre de la llave
-            'id_calificacion',         // Columna en la tabla hija
-            'calificaciones',          // Tabla padre
-            'id_calificacion'          // Columna en la tabla padre
+            'fk_detalle_calificacion',
+            'id_calificacion',
+            'calificaciones',
+            'id_calificacion'
         );
     }
 
-    /**
-     * Función auxiliar para crear la relación entre las tablas
-     */
     private function checkAndAddForeignKey($fkName, $column, $refTable, $refColumn) {
-        // Verificamos en la tabla HIJA (calificaciones_detalles)
-        $sqlCheck = "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS 
-                     WHERE CONSTRAINT_NAME = '$fkName' 
+        $sqlCheck = "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                     WHERE CONSTRAINT_NAME = '$fkName'
                      AND TABLE_SCHEMA = DATABASE()";
-        
+
         if (!$this->db->query($sqlCheck)->fetchColumn()) {
             try {
-                // Aplicamos el ALTER TABLE a la tabla hija
-                $sql = "ALTER TABLE calificaciones_detalles 
-                        ADD CONSTRAINT $fkName 
-                        FOREIGN KEY ($column) REFERENCES $refTable($refColumn) 
-                        ON DELETE CASCADE ON UPDATE CASCADE"; 
+                $sql = "ALTER TABLE calificaciones_detalles
+                        ADD CONSTRAINT $fkName
+                        FOREIGN KEY ($column) REFERENCES $refTable($refColumn)
+                        ON DELETE CASCADE ON UPDATE CASCADE";
                 $this->db->exec($sql);
-                echo "      🔗 Relación Maestro-Detalle '$fkName' creada.\n";
-            } catch (\Exception $e) {
-                echo "      ⚠️ Error FK: " . $e->getMessage() . "\n";
-            }
+            } catch (\Exception $e) {}
         }
+    }
+
+    // ============================
+    // Crear Maestro + (opcional) Detalles
+    // ============================
+    public function createWithDetails(string $nombre, string $estadoMaestro = 'Activo', array $items = []): int {
+        $this->db->beginTransaction();
+        try {
+            // Maestro
+            $stmt = $this->db->prepare("INSERT INTO calificaciones (nombre, estado) VALUES (?, ?)");
+            $stmt->execute([$nombre, $estadoMaestro]);
+
+            $id = (int)$this->db->lastInsertId();
+
+            // Detalles opcionales
+            if (!empty($items)) {
+                $stmtDet = $this->db->prepare("
+                    INSERT INTO calificaciones_detalles (id_calificacion, descripcion, valor, estado)
+                    VALUES (?, ?, ?, ?)
+                ");
+
+                foreach ($items as $it) {
+                    $desc = trim($it['descripcion'] ?? '');
+                    if ($desc === '') continue;
+
+                    $valor = $it['valor'] ?? 0;
+                    if (!is_numeric($valor)) $valor = 0;
+
+                    $estadoDet = $it['estado'] ?? 'Activo';
+
+                    $stmtDet->execute([$id, $desc, (float)$valor, $estadoDet]);
+                }
+            }
+
+            $this->db->commit();
+            return $id;
+
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function getAllActivas(): array {
+        $stmt = $this->db->prepare("SELECT * FROM calificaciones WHERE estado = 'Activo' ORDER BY id_calificacion DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getDetallesActivos(int $id): array {
+        $stmt = $this->db->prepare("
+            SELECT * FROM calificaciones_detalles
+            WHERE id_calificacion = ? AND estado = 'Activo'
+            ORDER BY valor DESC
+        ");
+        $stmt->execute([$id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

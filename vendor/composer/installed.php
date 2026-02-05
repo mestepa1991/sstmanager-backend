@@ -3,7 +3,7 @@
         'name' => 'migue/sstmanager-backend',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '1f02bbad69b6fd27a64c5915781ec38f338b4027',
+        'reference' => 'ddc06ed784bc1e8f31a314d4bd21983fd26cb217',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -49,7 +49,7 @@
         'migue/sstmanager-backend' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '1f02bbad69b6fd27a64c5915781ec38f338b4027',
+            'reference' => 'ddc06ed784bc1e8f31a314d4bd21983fd26cb217',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

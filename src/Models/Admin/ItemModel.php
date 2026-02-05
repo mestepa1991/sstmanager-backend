@@ -7,7 +7,7 @@ class ItemModel extends GenericModel {
     
     public function __construct($db) {
         // Por defecto, este modelo gestiona la tabla PADRE
-        parent::__construct($db, 'estandares');
+       parent::__construct($db, 'item');
     }
 
     /**

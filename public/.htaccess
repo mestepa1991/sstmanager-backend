@@ -1,5 +1,6 @@
 RewriteEngine On
-# IMPORTANTE: Esto permite que los parámetros ?table=perfiles pasen a PHP
+
+# Reescritura MVC normal
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L,QSA]
+RewriteRule ^ index.php [L,QSA]
