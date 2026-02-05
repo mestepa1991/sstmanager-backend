@@ -20,6 +20,8 @@ use App\Models\Admin\ItemModel;
 use App\Models\Admin\PermisoModel;
 use App\Models\Admin\PlanmodulosModel;
 use App\Models\Admin\TipoempresaModel;
+use App\Models\Admin\CategoriaguiarucModel;
+use App\Models\Admin\GuiaRucItemModel;
 
 $host = 'localhost';
 $user = 'root';
@@ -63,7 +65,9 @@ try {
         new ItemModel($db),
         new PermisoModel($db),
         new PlanmodulosModel($db),
-        new TipoempresaModel($db)
+        new TipoempresaModel($db),
+        new CategoriaguiarucModel($db),
+        new GuiaRucItemModel($db)
     ];
 
     foreach ($modelos as $index => $modelo) {

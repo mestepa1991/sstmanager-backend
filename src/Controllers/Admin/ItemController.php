@@ -17,7 +17,7 @@ class ItemController extends GenericController {
 
     /**
      * @OA\Get(
-     * path="/items",
+     * path="/item",
      * operationId="getItemsList",
      * tags={"Configuración - Items"},
      * summary="Listar items de estándares",
@@ -70,7 +70,7 @@ class ItemController extends GenericController {
 
     /**
      * @OA\Post(
-     * path="/items",
+     * path="/item",
      * operationId="createItem",
      * tags={"Configuración - Items"},
      * summary="Crear nuevo item",
@@ -115,7 +115,7 @@ class ItemController extends GenericController {
 
     /**
      * @OA\Put(
-     * path="/items/{id}",
+     * path="/item/{id}",
      * operationId="updateItem",
      * tags={"Configuración - Items"},
      * summary="Actualizar item existente",
@@ -160,7 +160,7 @@ class ItemController extends GenericController {
 
     /**
      * @OA\Delete(
-     * path="/items/{id}",
+     * path="/item/{id}",
      * operationId="deleteItem",
      * tags={"Configuración - Items"},
      * summary="Desactivar (eliminar lógicamente) un item",

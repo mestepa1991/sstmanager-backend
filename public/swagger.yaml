@@ -237,6 +237,72 @@ paths:
       responses:
         '200':
           description: 'Estado cambiado a 0'
+  '/index.php?table=categorias_guia_ruc':
+    get:
+      tags:
+        - 'Admin - Categorias Guia RUC'
+      summary: 'Listar categorias de Guía RUC activas'
+      operationId: d58be55799239842d070ab626d07df77
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoriaGuiaRucResponse'
+    post:
+      tags:
+        - 'Admin - Categorias Guia RUC'
+      summary: 'Crear nueva categoria para Guía RUC'
+      operationId: 8ec71060a80a97040767b6bd9177a12c
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaGuiaRucRequest'
+      responses:
+        '201':
+          description: 'Creado exitosamente'
+  '/index.php?table=categorias_guia_ruc&id={id}':
+    put:
+      tags:
+        - 'Admin - Categorias Guia RUC'
+      summary: 'Actualizar categoria de Guía RUC'
+      operationId: ae0bdacd332d9acead161facc7b36daf
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaGuiaRucRequest'
+      responses:
+        '200':
+          description: 'Actualizado con éxito'
+    delete:
+      tags:
+        - 'Admin - Categorias Guia RUC'
+      summary: 'Inactivar categoria (Borrado Lógico)'
+      operationId: 177e87085c034f039668385d41110e37
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Registro inactivado'
   '/index.php?table=ciclos_phva':
     get:
       tags:
@@ -381,7 +447,73 @@ paths:
       responses:
         '200':
           description: Inactivada
-  /items:
+  '/index.php?table=guia_ruc_items':
+    get:
+      tags:
+        - 'Admin - Ítems Guía RUC'
+      summary: 'Listar todos los ítems con su categoría'
+      operationId: 826308ad9316d004d626d707d2b1ef25
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GuiaRucItemSerializer'
+    post:
+      tags:
+        - 'Admin - Ítems Guía RUC'
+      summary: 'Crear nuevo ítem de la Guía RUC'
+      operationId: db8c6c962579f74b7c3b1dc8885a2a19
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuiaRucItemRequest'
+      responses:
+        '201':
+          description: 'Creado exitosamente'
+  '/index.php?table=guia_ruc_items&id={id}':
+    put:
+      tags:
+        - 'Admin - Ítems Guía RUC'
+      summary: 'Actualizar ítem de Guía RUC'
+      operationId: 3a8e308a14dc7bda94d56e6d73d72e5b
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuiaRucItemRequest'
+      responses:
+        '200':
+          description: 'Actualizado con éxito'
+    delete:
+      tags:
+        - 'Admin - Ítems Guía RUC'
+      summary: 'Inactivar ítem (Borrado Lógico)'
+      operationId: 9d436a08b5e0b8fd2a64eb558f592e49
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Ítem inactivado'
+  /item:
     get:
       tags:
         - 'Configuración - Items'
@@ -442,7 +574,7 @@ paths:
           description: 'Item creado correctamente'
         '400':
           description: 'Error de validación'
-  '/items/{id}':
+  '/item/{id}':
     put:
       tags:
         - 'Configuración - Items'
@@ -914,6 +1046,47 @@ paths:
       responses:
         '201':
           description: Creado
+  '/tipo-empresa/{id}':
+    put:
+      tags:
+        - 'Admin - Catálogos'
+      summary: 'Actualizar una configuración de tipo de empresa'
+      operationId: updateTipoEmpresa
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID de la configuración'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoEmpresa'
+      responses:
+        '200':
+          description: 'Actualizado correctamente'
+        '400':
+          description: 'Error en la validación'
+    delete:
+      tags:
+        - 'Admin - Catálogos'
+      summary: 'Desactivar (borrado lógico) un tipo de empresa'
+      operationId: deleteTipoEmpresa
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID a desactivar'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Desactivado con éxito'
   '/index.php?action=login':
     post:
       tags:
@@ -1148,6 +1321,32 @@ components:
           type: integer
           example: 1
       type: object
+    CategoriaGuiaRucRequest:
+      title: 'Cuerpo de Categoria Guía RUC'
+      properties:
+        codigo:
+          type: string
+          example: CAT-01
+        descripcion:
+          type: string
+          example: 'LIDERAZGO Y COMPROMISO'
+      type: object
+    CategoriaGuiaRucResponse:
+      title: 'Respuesta de Categoria Guía RUC'
+      properties:
+        id:
+          type: integer
+          example: 1
+        codigo:
+          type: string
+          example: CAT-01
+        descripcion:
+          type: string
+          example: 'LIDERAZGO Y COMPROMISO'
+        estado:
+          type: integer
+          example: 1
+      type: object
     Ciclo:
       title: 'Ciclo PHVA'
       description: 'Modelo de los pasos del ciclo PHVA'
@@ -1159,8 +1358,82 @@ components:
           type: string
           example: Planear
       type: object
+    GuiaRucItemRequest:
+      title: 'Cuerpo de Ítem Guía RUC'
+      properties:
+        id_categoria:
+          type: integer
+          example: 1
+        num_item:
+          type: string
+          example: 1.1.1
+        requisito:
+          type: string
+          example: 'Política SSTA'
+        descripcion:
+          type: string
+          example: 'Descripción detallada...'
+        observaciones:
+          type: string
+          example: 'Notas adicionales'
+      type: object
+    GuiaRucItemModel:
+      title: 'Modelo de Ítems Guía RUC'
+      description: 'Estructura de la tabla de ítems de la Guía RUC con relación a categorías'
+    CategoriaGuiaRucSerializer:
+      title: 'Serializador de Categoría Guía RUC'
+      description: 'Transforma los datos de la tabla categorias_guia_ruc para la API'
+      properties:
+        id:
+          type: integer
+          example: 1
+        codigo:
+          type: string
+          example: CAT-01
+        descripcion:
+          type: string
+          example: 'LIDERAZGO Y COMPROMISO'
+        estado:
+          type: integer
+          example: 1
+      type: object
     Empresa:
       title: 'Empresa Cliente (Tenant)'
+    GuiaRucItemSerializer:
+      title: 'Serializador de Ítems Guía RUC'
+      description: 'Transforma los datos de los ítems de la Guía RUC para la API'
+      properties:
+        id:
+          type: integer
+          example: 1
+        id_categoria:
+          type: integer
+          example: 5
+        categoria_info:
+          properties:
+            codigo:
+              type: string
+              example: CAT-01
+            nombre:
+              type: string
+              example: 'LIDERAZGO Y COMPROMISO'
+          type: object
+        num_item:
+          type: string
+          example: 1.1.1
+        requisito:
+          type: string
+          example: 'Política de SSTA'
+        descripcion:
+          type: string
+          example: 'La empresa debe contar con una política...'
+        observaciones:
+          type: string
+          example: 'Pendiente revisión anual'
+        estado:
+          type: integer
+          example: 1
+      type: object
     Modulo:
       title: 'Módulo del Sistema'
       description: 'Esquema para la gestión de módulos y funciones (Jerarquía)'
@@ -1348,11 +1621,17 @@ tags:
     name: 'Admin - Categorias'
     description: 'Admin - Categorias'
   -
+    name: 'Admin - Categorias Guia RUC'
+    description: 'Admin - Categorias Guia RUC'
+  -
     name: 'Admin - Catálogos'
     description: 'Admin - Catálogos'
   -
     name: 'Admin - Empresas'
     description: 'Admin - Empresas'
+  -
+    name: 'Admin - Ítems Guía RUC'
+    description: 'Admin - Ítems Guía RUC'
   -
     name: 'Configuración - Items'
     description: 'Configuración - Items'

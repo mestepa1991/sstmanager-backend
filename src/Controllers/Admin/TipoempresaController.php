@@ -85,7 +85,27 @@ class TipoempresaController extends GenericController {
             return json_encode(["error" => $e->getMessage()]);
         }
     }
-
+/**
+     * @OA\Put(
+     * path="/tipo-empresa/{id}",
+     * operationId="updateTipoEmpresa",
+     * tags={"Admin - Catálogos"},
+     * summary="Actualizar una configuración de tipo de empresa",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * description="ID de la configuración",
+     * required=true,
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(ref="#/components/schemas/TipoEmpresa")
+     * ),
+     * @OA\Response(response=200, description="Actualizado correctamente"),
+     * @OA\Response(response=400, description="Error en la validación")
+     * )
+     */
     public function update($id, $input) {
         try {
             if (isset($input['empleados_desde']) && isset($input['empleados_hasta'])) {
@@ -102,7 +122,22 @@ class TipoempresaController extends GenericController {
             return json_encode(["error" => $e->getMessage()]);
         }
     }
-
+/**
+     * @OA\Delete(
+     * path="/tipo-empresa/{id}",
+     * operationId="deleteTipoEmpresa",
+     * tags={"Admin - Catálogos"},
+     * summary="Desactivar (borrado lógico) un tipo de empresa",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * description="ID a desactivar",
+     * required=true,
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(response=200, description="Desactivado con éxito")
+     * )
+     */
     public function delete($id) {
         $success = $this->model->update($id, ['estado' => 0]);
         return json_encode(["ok" => $success, "mensaje" => "Desactivado"]);
