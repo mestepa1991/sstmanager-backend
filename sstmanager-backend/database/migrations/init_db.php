@@ -22,13 +22,13 @@ use App\Models\Admin\PlanmodulosModel;
 use App\Models\Admin\TipoempresaModel;
 use App\Models\Admin\CategoriaguiarucModel;
 use App\Models\Admin\GuiaRucItemModel;
+use App\Models\Admin\PersonalSstModel; // <--- 1. NUEVA IMPORTACIÓN
 
 $host = 'localhost';
 $user = 'root';
 $pass = ''; 
 $dbName = 'sstmanager_db2'; 
 
-// --- UN SOLO BLOQUE TRY PARA TODO EL PROCESO ---
 try {
     echo "-------------------------------------------------\n";
     echo "⚙️  ETAPA 1: VERIFICACIÓN DE BASE DE DATOS\n";
@@ -44,7 +44,6 @@ try {
     echo "🏗️  ETAPA 2: MIGRACIÓN DE TABLAS ORGANIZADAS\n";
     echo "-------------------------------------------------\n";
 
-    // Instanciamos la conexión dinámica
     $dbConfig = new Database($dbName); 
     $db = $dbConfig->getConnection();
 
@@ -57,6 +56,7 @@ try {
         new ModuloModel($db),
         new PlanModel($db),
         new EmpresaModel($db),
+        new PersonalSstModel($db), // <--- 2. AGREGADO AL ARRAY (Después de Empresa por la FK)
         new PerfilModel($db),
         new UsuarioModel($db),
         new CicloModel($db),

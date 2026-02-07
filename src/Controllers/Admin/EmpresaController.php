@@ -20,7 +20,6 @@ class EmpresaController extends GenericController {
      * operationId="getEmpresasList",
      * tags={"Admin - Empresas"},
      * summary="Listar todas las empresas",
-     * description="Ruta real: /index.php?table=empresas",
      * @OA\Response(
      * response=200, 
      * description="Lista de empresas",
@@ -29,9 +28,10 @@ class EmpresaController extends GenericController {
      * )
      */
     public function getAll() {
+        // Ajustamos el SQL para traer los nuevos campos
         $sql = "SELECT e.*, p.nombre_plan 
                 FROM empresas e 
-                INNER JOIN planes p ON e.id_plan = p.id_plan 
+                LEFT JOIN planes p ON e.id_plan = p.id_plan 
                 WHERE e.estado = 1";
         
         $stmt = $this->db->prepare($sql);
@@ -41,20 +41,9 @@ class EmpresaController extends GenericController {
         return json_encode(EmpresaSerializer::toList($data));
     }
 
-    /**
-     * @OA\Get(
-     * path="/empresas/{id}",
-     * operationId="getEmpresaDetail",
-     * tags={"Admin - Empresas"},
-     * summary="Obtener detalle de empresa",
-     * description="Ruta real: /index.php?table=empresas&id={id}",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Detalle")
-     * )
-     */
     public function getOne($id) {
         $sql = "SELECT e.*, p.nombre_plan FROM empresas e 
-                INNER JOIN planes p ON e.id_plan = p.id_plan 
+                LEFT JOIN planes p ON e.id_plan = p.id_plan 
                 WHERE e.id_empresa = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
@@ -78,12 +67,19 @@ class EmpresaController extends GenericController {
      * required=true,
      * @OA\JsonContent(
      * required={"nombre_empresa", "nit", "id_plan"},
-     * @OA\Property(property="nombre_empresa", type="string", example="Empresa SAS"),
-     * @OA\Property(property="nit", type="string", example="900123456"),
+     * @OA\Property(property="nombre_empresa", type="string", example="Mi Empresa S.A.S"),
+     * @OA\Property(property="tipo_documento", type="string", example="NIT"),
+     * @OA\Property(property="nit", type="string", example="900.000.000-1"),
      * @OA\Property(property="id_plan", type="integer", example=1),
-     * @OA\Property(property="email_contacto", type="string"),
-     * @OA\Property(property="telefono", type="string"),
-     * @OA\Property(property="direccion", type="string")
+     * @OA\Property(property="email_contacto", type="string", example="contacto@empresa.com"),
+     * @OA\Property(property="telefono", type="string", example="601234567"),
+     * @OA\Property(property="direccion", type="string", example="Calle 123 #45-67"),
+     * @OA\Property(property="nombre_rl", type="string", example="Juan Perez"),
+     * @OA\Property(property="documento_rl", type="string", example="10203040"),
+     * @OA\Property(property="cant_directos", type="integer", example=10),
+     * @OA\Property(property="cant_contratistas", type="integer", example=5),
+     * @OA\Property(property="cant_aprendices", type="integer", example=2),
+     * @OA\Property(property="cant_brigadistas", type="integer", example=3)
      * )
      * ),
      * @OA\Response(response=201, description="Creada")
@@ -91,30 +87,32 @@ class EmpresaController extends GenericController {
      */
     public function create($input) {
         try {
-            if (empty($input['nit']) || empty($input['id_plan'])) throw new Exception("NIT e ID Plan requeridos.");
+            // Validaciones básicas
+            if (empty($input['nombre_empresa']) || empty($input['nit']) || empty($input['id_plan'])) {
+                throw new Exception("Nombre, NIT e ID Plan son obligatorios.");
+            }
 
+            // Validar unicidad de NIT
             $stmt = $this->db->prepare("SELECT COUNT(*) FROM empresas WHERE nit = ?");
             $stmt->execute([$input['nit']]);
-            if ($stmt->fetchColumn() > 0) throw new Exception("El NIT ya existe.");
+            if ($stmt->fetchColumn() > 0) throw new Exception("El NIT ya está registrado.");
 
+            // El GenericModel se encarga de mapear los keys del array $input 
+            // con las columnas de la tabla 'empresas'
             $id = $this->model->create($input);
-            return json_encode(["id" => $id, "mensaje" => "Empresa registrada"]);
+            
+            http_response_code(201);
+            return json_encode([
+                "status" => "success",
+                "id" => $id, 
+                "mensaje" => "Empresa registrada exitosamente"
+            ]);
         } catch (Exception $e) {
+            http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
     }
 
-    /**
-     * @OA\Put(
-     * path="/empresas/{id}",
-     * operationId="updateEmpresa",
-     * tags={"Admin - Empresas"},
-     * summary="Actualizar empresa",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Empresa")),
-     * @OA\Response(response=200, description="Actualizada")
-     * )
-     */
     public function update($id, $input) {
         try {
             if (isset($input['nit'])) {
@@ -122,24 +120,15 @@ class EmpresaController extends GenericController {
                 $stmt->execute([$input['nit'], $id]);
                 if ($stmt->fetchColumn() > 0) throw new Exception("El NIT ya pertenece a otra empresa.");
             }
+            
             $success = $this->model->update($id, $input);
-            return json_encode(["ok" => $success, "mensaje" => "Actualizado correctamente"]);
+            return json_encode(["ok" => $success, "mensaje" => "Información actualizada"]);
         } catch (Exception $e) {
             http_response_code(400);
             return json_encode(["error" => $e->getMessage()]);
         }
     }
 
-    /**
-     * @OA\Delete(
-     * path="/empresas/{id}",
-     * operationId="deleteEmpresa",
-     * tags={"Admin - Empresas"},
-     * summary="Inactivar empresa",
-     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     * @OA\Response(response=200, description="Inactivada")
-     * )
-     */
     public function delete($id) {
         $success = $this->model->update($id, ['estado' => 0]);
         return json_encode(["ok" => $success, "mensaje" => "Empresa inactivada"]);

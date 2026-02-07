@@ -13,16 +13,16 @@ class GenericModel {
         $this->db = $db;
         $this->table = $table;
 
-        // ✅ DEFINICIÓN DINÁMICA DE LLAVE PRIMARIA (con tipo_empresa incluido)
-        // Recomendado: mapa para evitar muchos elseif y futuros olvidos
+        // ✅ MAPA DE LLAVES PRIMARIAS ACTUALIZADO
         $pkMap = [
             'usuarios'     => 'id_usuario',
             'planes'       => 'id_plan',
             'perfiles'     => 'id_perfil',
             'modulos'      => 'id_modulo',
             'tipo_empresa' => 'id_config',
-            'item' => 'id_detalle',
-
+            'item'         => 'id_detalle',
+            'empresas'     => 'id_empresa',
+            'personal_sst' => 'id_personal_sst', // Confirmado con guion bajo
         ];
 
         $this->primaryKey = $pkMap[$this->table] ?? 'id';
@@ -32,7 +32,8 @@ class GenericModel {
      * READ: Obtener todos los registros
      */
     public function all() {
-        $query = "SELECT * FROM " . $this->table;
+        // Protegemos el nombre de la tabla con backticks
+        $query = "SELECT * FROM `{$this->table}`"; 
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -42,7 +43,8 @@ class GenericModel {
      * READ: Obtener un registro por ID
      */
     public function find($id) {
-        $query = "SELECT * FROM " . $this->table . " WHERE {$this->primaryKey} = :id LIMIT 0,1";
+        // Protegemos tabla y columna de llave primaria
+        $query = "SELECT * FROM `{$this->table}` WHERE `{$this->primaryKey}` = :id LIMIT 0,1";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
@@ -53,7 +55,6 @@ class GenericModel {
      * CREATE: Insertar registro(s) con soporte para inserción masiva
      */
     public function create($data) {
-        // Soporte para Bulk Insert (necesario para sincronizar permisos)
         if (isset($data[0]) && is_array($data[0])) {
             $ids = [];
             try {
@@ -69,18 +70,20 @@ class GenericModel {
             }
         }
 
-        $keys = implode(", ", array_keys($data));
-        $values = array_values($data);
-        $placeholders = implode(", ", array_fill(0, count($values), "?"));
+        // ✅ PROTECCIÓN TOTAL: backticks para cada nombre de columna
+        $fields = array_keys($data);
+        $keys = implode("`, `", $fields);
+        $placeholders = implode(", ", array_fill(0, count($data), "?"));
 
-        $sql = "INSERT INTO {$this->table} ($keys) VALUES ($placeholders)";
+        $sql = "INSERT INTO `{$this->table}` (`$keys`) VALUES ($placeholders)";
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute($values);
+            $stmt->execute(array_values($data));
             return $this->db->lastInsertId();
         } catch (\PDOException $e) {
-            throw new Exception("Error en Insert: " . $e->getMessage());
+            // Reporte de error con contexto de tabla
+            throw new Exception("Error en Insert en {$this->table}: " . $e->getMessage());
         }
     }
 
@@ -93,8 +96,9 @@ class GenericModel {
                 throw new Exception("Datos vacíos para actualizar.");
             }
 
-            $fields = array_map(fn($key) => "$key = :$key", array_keys($data));
-            $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE {$this->primaryKey} = :pk_id";
+            // ✅ PROTECCIÓN TOTAL: backticks para tabla y campos
+            $fields = array_map(fn($key) => "`$key` = :$key", array_keys($data));
+            $sql = "UPDATE `{$this->table}` SET " . implode(', ', $fields) . " WHERE `{$this->primaryKey}` = :pk_id";
 
             $stmt = $this->db->prepare($sql);
 
@@ -107,7 +111,7 @@ class GenericModel {
 
         } catch (\PDOException $e) {
             error_log("Error SQL en {$this->table}: " . $e->getMessage());
-            throw new Exception("Fallo al actualizar: " . $e->getMessage());
+            throw new Exception("Fallo al actualizar registro en {$this->table}: " . $e->getMessage());
         }
     }
 
@@ -115,13 +119,13 @@ class GenericModel {
      * DELETE: Eliminar un registro usando la PK dinámica
      */
     public function delete($id) {
-        $query = "DELETE FROM " . $this->table . " WHERE {$this->primaryKey} = :id";
+        $query = "DELETE FROM `{$this->table}` WHERE `{$this->primaryKey}` = :id";
         try {
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':id', $id);
             return $stmt->execute();
         } catch (\PDOException $e) {
-            throw new Exception("Error al eliminar: " . $e->getMessage());
+            throw new Exception("Error al eliminar en {$this->table}: " . $e->getMessage());
         }
     }
 
@@ -129,15 +133,15 @@ class GenericModel {
      * MIGRATION: Crear tabla si no existe
      */
     public function createTable(array $fields): void {
-        $primaryKeyDef = "{$this->primaryKey} INT AUTO_INCREMENT PRIMARY KEY";
+        $primaryKeyDef = "`{$this->primaryKey}` INT AUTO_INCREMENT PRIMARY KEY";
         $columns = [$primaryKeyDef];
 
         foreach ($fields as $name => $definition) {
-            $columns[] = "$name $definition";
+            $columns[] = "`$name` $definition";
         }
 
         $sql = sprintf(
-            "CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+            "CREATE TABLE IF NOT EXISTS `%s` (%s) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
             $this->table,
             implode(', ', $columns)
         );

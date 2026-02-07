@@ -8,101 +8,6 @@ servers:
     url: /sstmanager-backend/public
     description: 'Servidor Local'
 paths:
-  '/index.php?table=calificaciones':
-    get:
-      tags:
-        - 'Admin - Calificaciones'
-      summary: 'Listar todas las escalas de calificación activas'
-      operationId: d22435e840bc588509c4b46e06d13d0e
-      responses:
-        '200':
-          description: 'Lista obtenida'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Calificacion'
-    post:
-      tags:
-        - 'Admin - Calificaciones'
-      summary: 'Crear nueva escala de calificación'
-      operationId: cefa5d4112b8ad94ff410d1bb04d3dab
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                nombre:
-                  type: string
-                  example: 'Evaluación Anual'
-              type: object
-      responses:
-        '201':
-          description: Creado
-  '/index.php?table=calificaciones&id={id}':
-    get:
-      tags:
-        - 'Admin - Calificaciones'
-      summary: 'Obtener una calificación con sus detalles'
-      operationId: c388beb470bc30d573c5fdddc29bf3f6
-      parameters:
-        -
-          name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: 'Objeto completo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Calificacion'
-        '404':
-          description: 'No encontrado'
-    put:
-      tags:
-        - 'Admin - Calificaciones'
-      summary: 'Actualizar nombre de la calificación'
-      operationId: 4db2e77f7c70c0353c433aa328e8fc39
-      parameters:
-        -
-          name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                nombre:
-                  type: string
-              type: object
-      responses:
-        '200':
-          description: Actualizado
-    delete:
-      tags:
-        - 'Admin - Calificaciones'
-      summary: 'Eliminar calificación (Borrado Lógico)'
-      description: 'No elimina el registro de la BD, solo cambia el estado a ''Inactivo''.'
-      operationId: cc97408c0066d56fe0076620454ea56c
-      parameters:
-        -
-          name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: 'Estado cambiado'
   '/index.php?table=categorias':
     get:
       tags:
@@ -349,7 +254,6 @@ paths:
       tags:
         - 'Admin - Empresas'
       summary: 'Listar todas las empresas'
-      description: 'Ruta real: /index.php?table=empresas'
       operationId: getEmpresasList
       responses:
         '200':
@@ -377,76 +281,47 @@ paths:
               properties:
                 nombre_empresa:
                   type: string
-                  example: 'Empresa SAS'
+                  example: 'Mi Empresa S.A.S'
+                tipo_documento:
+                  type: string
+                  example: NIT
                 nit:
                   type: string
-                  example: '900123456'
+                  example: 900.000.000-1
                 id_plan:
                   type: integer
                   example: 1
                 email_contacto:
                   type: string
+                  example: contacto@empresa.com
                 telefono:
                   type: string
+                  example: '601234567'
                 direccion:
                   type: string
+                  example: 'Calle 123 #45-67'
+                nombre_rl:
+                  type: string
+                  example: 'Juan Perez'
+                documento_rl:
+                  type: string
+                  example: '10203040'
+                cant_directos:
+                  type: integer
+                  example: 10
+                cant_contratistas:
+                  type: integer
+                  example: 5
+                cant_aprendices:
+                  type: integer
+                  example: 2
+                cant_brigadistas:
+                  type: integer
+                  example: 3
               type: object
       responses:
         '201':
           description: Creada
-  '/empresas/{id}':
-    get:
-      tags:
-        - 'Admin - Empresas'
-      summary: 'Obtener detalle de empresa'
-      description: 'Ruta real: /index.php?table=empresas&id={id}'
-      operationId: getEmpresaDetail
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Detalle
-    put:
-      tags:
-        - 'Admin - Empresas'
-      summary: 'Actualizar empresa'
-      operationId: updateEmpresa
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Empresa'
-      responses:
-        '200':
-          description: Actualizada
-    delete:
-      tags:
-        - 'Admin - Empresas'
-      summary: 'Inactivar empresa'
-      operationId: deleteEmpresa
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Inactivada
   '/index.php?table=guia_ruc_items':
     get:
       tags:
@@ -864,6 +739,123 @@ paths:
       responses:
         '200':
           description: 'Matriz de permisos optimizada'
+  '/personal_sst/empresa/{id_empresa}':
+    get:
+      tags:
+        - 'Admin - Personal SST'
+      summary: 'Obtener personal SST filtrando estrictamente por campo id_empresa'
+      operationId: e3bfe4f6856b227ede143b2a050f60fb
+      parameters:
+        -
+          name: id_empresa
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Datos del personal SST'
+  /personal_sst:
+    get:
+      tags:
+        - 'Admin - Personal SST'
+      summary: 'Listar todo el personal SST'
+      operationId: 0cf4d33f5ac75358789bb5bb93e9a1f0
+      responses:
+        '200':
+          description: 'Lista de personal con su empresa asociada'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonalSst'
+    post:
+      tags:
+        - 'Admin - Personal SST'
+      summary: 'Asociar nuevo profesional SST a una empresa'
+      operationId: 3c8912f4b14df1a1696b2b4824acf1a8
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - id_empresa
+                - proyecto_rige
+                - nombre_profesional
+                - correo_sst
+              properties:
+                id_empresa:
+                  type: integer
+                  example: 2
+                proyecto_rige:
+                  type: string
+                  example: 'IMPLEMENTACIÓN ESTÁNDARES MÍNIMOS'
+                nombre_profesional:
+                  type: string
+                  example: 'JUAN SEBASTIÁN PINEDA'
+                correo_sst:
+                  type: string
+                  example: profesional.sst@ejemplo.com
+                telefono_sst:
+                  type: string
+                  example: '315 888 9900'
+                firma_sst_url:
+                  type: string
+                  example: JS_PINEDA_SIGN
+              type: object
+      responses:
+        '201':
+          description: 'Personal asociado exitosamente'
+  '/personal_sst/{id}':
+    put:
+      tags:
+        - 'Admin - Personal SST'
+      summary: 'Actualizar datos del personal SST'
+      operationId: 762d023ac0762051a6083b4651d29bf1
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                proyecto_rige:
+                  type: string
+                nombre_profesional:
+                  type: string
+                correo_sst:
+                  type: string
+                telefono_sst:
+                  type: string
+                firma_sst_url:
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: 'Datos actualizados'
+    delete:
+      tags:
+        - 'Admin - Personal SST'
+      summary: 'Eliminar asociación de personal'
+      operationId: fb8fdec3340be0fbc0e75b7763759bde
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Asociación eliminada'
   /planes:
     get:
       tags:
@@ -1249,30 +1241,6 @@ paths:
           description: 'Campo actualizado'
 components:
   schemas:
-    Calificacion:
-      title: Calificación
-      properties:
-        id:
-          type: integer
-          example: 1
-        nombre:
-          type: string
-          example: 'Escala SST'
-        estado:
-          type: integer
-          example: 1
-        items:
-          type: array
-          items:
-            properties:
-              id_detalle:
-                type: integer
-              descripcion:
-                type: string
-              valor:
-                type: number
-            type: object
-      type: object
     CategoriaRequest:
       title: 'Cuerpo de Categoria'
       description: 'Campos necesarios para crear o actualizar una categoría (Excluye campos automáticos)'
@@ -1399,6 +1367,19 @@ components:
       type: object
     Empresa:
       title: 'Empresa Cliente (Tenant)'
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        identificacion:
+          properties:
+            tipo:
+              type: string
+            numero:
+              type: string
+          type: object
+      type: object
     GuiaRucItemSerializer:
       title: 'Serializador de Ítems Guía RUC'
       description: 'Transforma los datos de los ítems de la Guía RUC para la API'
@@ -1497,6 +1478,8 @@ components:
           type: integer
           example: 0
       type: object
+    PersonalSst:
+      title: 'Personal SST Asociado'
     Plan:
       title: 'Plan de Suscripción'
       properties:
@@ -1615,9 +1598,6 @@ tags:
     name: Auth
     description: 'Gestión de Tokens y Acceso'
   -
-    name: 'Admin - Calificaciones'
-    description: 'Admin - Calificaciones'
-  -
     name: 'Admin - Categorias'
     description: 'Admin - Categorias'
   -
@@ -1641,6 +1621,9 @@ tags:
   -
     name: 'Seguridad - Permisos'
     description: 'Seguridad - Permisos'
+  -
+    name: 'Admin - Personal SST'
+    description: 'Admin - Personal SST'
   -
     name: 'Admin - Planes'
     description: 'Admin - Planes'
