@@ -23,21 +23,25 @@ $allowedOrigins = [
     'http://127.0.0.1:3000',
 ];
 
-if (in_array($origin, $allowedOrigins, true)) {
+// Si viene Origin y está permitido, lo devolvemos; si no, fallback DEV
+if ($origin && in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
     header("Vary: Origin");
+} else {
+    // Fallback DEV para evitar que el preflight falle sin ACAO
+    header("Access-Control-Allow-Origin: http://localhost:3000");
 }
 
+header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Max-Age: 86400");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
-
 
 /**
  * =========================================================

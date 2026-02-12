@@ -1,0 +1,14 @@
+[33mb8d62ea[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m ajuste tablas empresas
+[33m1f6a1c1[m adicion guia tipo empresa item y ajuste int
+[33m9e2cc67[m Add backend changes
+[33mddc06ed[m tipos empresa
+[33m7324687[m metodo de carge perfiles
+[33m2bfff6d[m se realizan adiciones al back
+[33m30adae9[m ajuste modleos de creacion permisos
+[33m1f02bba[m se realizan adiciones al back
+[33mef279de[m ajusrte contorlardores
+[33m2080447[m ajustes perfiles
+[33m257898e[m ajuste metodo de modulos
+[33mc1d362d[m feat: crud categorias y tipos de categorias mas init_bd adicion del a carpeta
+[33m48c8477[m feat: crud completo calificaciones con borrado logico y documentacion corregida
+[33m4e1e2fe[m Unificación de migraciones dinámicas y limpieza de controladores para Swagger

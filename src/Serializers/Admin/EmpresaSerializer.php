@@ -3,29 +3,19 @@ namespace App\Serializers\Admin;
 
 use OpenApi\Annotations as OA;
 
-/**
- * @OA\Schema(
- * schema="Empresa",
- * title="Empresa Cliente (Tenant)",
- * @OA\Property(property="id", type="integer"),
- * @OA\Property(property="nombre", type="string"),
- * @OA\Property(property="identificacion", type="object",
- * @OA\Property(property="tipo", type="string"),
- * @OA\Property(property="numero", type="string")
- * )
- * )
- */
 class EmpresaSerializer {
 
     public static function toArray($data) {
         if (!$data) return null;
+
+        $numeroDocumento = $data['numero_documento'] ?? ($data['nit'] ?? null);
 
         return [
             'id' => (int)$data['id_empresa'],
             'nombre' => $data['nombre_empresa'],
             'identificacion' => [
                 'tipo' => $data['tipo_documento'] ?? 'NIT',
-                'numero' => $data['nit']
+                'numero' => $numeroDocumento
             ],
             'contacto' => [
                 'email' => $data['email_contacto'] ?? null,
@@ -42,13 +32,13 @@ class EmpresaSerializer {
                 'aprendices' => (int)($data['cant_aprendices'] ?? 0),
                 'brigadistas' => (int)($data['cant_brigadistas'] ?? 0),
                 'total' => (int)(
-                    ($data['cant_directos'] ?? 0) + 
-                    ($data['cant_contratistas'] ?? 0) + 
+                    ($data['cant_directos'] ?? 0) +
+                    ($data['cant_contratistas'] ?? 0) +
                     ($data['cant_aprendices'] ?? 0)
                 )
             ],
             'suscripcion' => [
-                'id_plan' => (int)$data['id_plan'],
+                'id_plan' => (int)($data['id_plan'] ?? 0),
                 'nombre_plan' => $data['nombre_plan'] ?? 'No definido'
             ],
             'configuracion' => [
