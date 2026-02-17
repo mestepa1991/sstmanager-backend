@@ -8,6 +8,7 @@ use App\Controllers\Admin\PermisoController;
 use App\Controllers\Admin\PlanModulosController;
 use App\Controllers\Admin\TipoempresaController;
 use App\Controllers\Admin\CalificacionController;
+use App\Controllers\Admin\FormularioController;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -156,6 +157,25 @@ try {
         };
         exit;
     }
+
+// ---------- FORMULARIOS ----------
+if ($table === 'formularios') {
+    $controller = new FormularioController($db);
+
+    if ($method === 'GET') {
+        $controller->index();
+    }
+
+    if ($method === 'POST') {
+        if ($action === 'update') {
+            $controller->update((int)$id);
+        } else {
+            $controller->store();
+        }
+    }
+
+    throw new Exception("Método no soportado para formularios", 405);
+}
 
     // ---------- CALIFICACIONES ----------
     if ($table === 'calificaciones') {
