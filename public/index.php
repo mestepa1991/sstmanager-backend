@@ -198,6 +198,8 @@ if ($table === 'formularios') {
 
         echo match ($method) {
             'POST' => $controller->create($input),
+            'GET'    => $controller->getFormularioPorEmpresa($id),
+            'PUT'    => $controller->updateCalificacion($id, $input),
             default => throw new Exception("Método no soportado para evaluaciones", 405)
         };
 

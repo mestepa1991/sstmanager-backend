@@ -659,6 +659,74 @@
                 }
             }
         },
+        "/evaluaciones/empresa/{id_empresa}": {
+            "get": {
+                "tags": [
+                    "Evaluaciones SG-SST"
+                ],
+                "summary": "Obtener el formulario de autoevaluación dinámico por empresa",
+                "operationId": "12a51d9c0f774d25ccb296f389041e1b",
+                "parameters": [
+                    {
+                        "name": "id_empresa",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Formulario dinámico con datos de empresa e ítems"
+                    }
+                }
+            }
+        },
+        "/evaluaciones/calificar/{id_detalle_evaluacion}": {
+            "put": {
+                "tags": [
+                    "Evaluaciones SG-SST"
+                ],
+                "summary": "Actualizar calificación (Entero) y observaciones (Texto)",
+                "operationId": "318e90d3b49f7e51830adc9bc485bb2b",
+                "parameters": [
+                    {
+                        "name": "id_detalle_evaluacion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cumple": {
+                                        "description": "1: Cumple, 2: No cumple, 3: No aplica",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Descripción detallada de la evidencia"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Dato guardado"
+                    }
+                }
+            }
+        },
         "/index.php?table=guia_ruc_items": {
             "get": {
                 "tags": [
