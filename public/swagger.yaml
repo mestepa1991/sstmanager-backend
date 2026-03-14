@@ -252,22 +252,24 @@ paths:
   /empresas:
     get:
       tags:
-        - 'Admin - Empresas'
-      summary: 'Listar todas las empresas'
+        - 'Configuración - Empresas'
+      summary: 'Listar empresas activas'
+      description: 'Obtiene todas las empresas que se encuentran en estado activo (estado = 1), incluyendo el nombre de su plan.'
       operationId: getEmpresasList
       responses:
         '200':
-          description: 'Lista de empresas'
+          description: 'Operación exitosa'
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Empresa'
+                  properties: { id_empresa: { type: integer, example: 1 }, nombre_empresa: { type: string, example: 'Mi Empresa S.A.S' }, numero_documento: { type: string, example: 900123456-7 }, id_plan: { type: integer, example: 3 }, nombre_plan: { type: string, example: 'Plan Premium' }, estado: { type: integer, example: 1 } }
+                  type: object
     post:
       tags:
-        - 'Admin - Empresas'
-      summary: 'Registrar empresa'
+        - 'Configuración - Empresas'
+      summary: 'Crear nueva empresa'
       operationId: createEmpresa
       requestBody:
         required: true
@@ -276,52 +278,137 @@ paths:
             schema:
               required:
                 - nombre_empresa
-                - nit
+                - numero_documento
                 - id_plan
               properties:
                 nombre_empresa:
                   type: string
-                  example: 'Mi Empresa S.A.S'
-                tipo_documento:
+                  example: 'Nueva Empresa S.A.S'
+                numero_documento:
+                  description: 'También se acepta el campo ''nit'''
                   type: string
-                  example: NIT
-                nit:
-                  type: string
-                  example: 900.000.000-1
+                  example: 901987654-3
                 id_plan:
                   type: integer
-                  example: 1
-                email_contacto:
-                  type: string
-                  example: contacto@empresa.com
-                telefono:
-                  type: string
-                  example: '601234567'
-                direccion:
-                  type: string
-                  example: 'Calle 123 #45-67'
-                nombre_rl:
-                  type: string
-                  example: 'Juan Perez'
-                documento_rl:
-                  type: string
-                  example: '10203040'
-                cant_directos:
-                  type: integer
-                  example: 10
-                cant_contratistas:
-                  type: integer
-                  example: 5
-                cant_aprendices:
-                  type: integer
                   example: 2
-                cant_brigadistas:
+              type: object
+      responses:
+        '201':
+          description: 'Empresa registrada exitosamente'
+        '400':
+          description: 'Error de validación o documento duplicado'
+  '/empresas/{id}':
+    get:
+      tags:
+        - 'Configuración - Empresas'
+      summary: 'Obtener una empresa por ID'
+      description: 'Devuelve los detalles de una única empresa especificada por su ID.'
+      operationId: getEmpresaById
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID de la empresa'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Operación exitosa'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id_empresa: { type: integer, example: 1 }
+                  nombre_empresa: { type: string, example: 'Mi Empresa S.A.S' }
+                  numero_documento: { type: string, example: 900123456-7 }
+                  id_plan: { type: integer, example: 3 }
+                  nombre_plan: { type: string, example: 'Plan Premium' }
+                  estado: { type: integer, example: 1 }
+                type: object
+        '404':
+          description: 'Empresa no encontrada'
+    put:
+      tags:
+        - 'Configuración - Empresas'
+      summary: 'Actualizar empresa existente'
+      operationId: updateEmpresa
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID de la empresa a actualizar'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                nombre_empresa:
+                  type: string
+                  example: 'Empresa Actualizada S.A.S'
+                numero_documento:
+                  description: 'También se acepta ''nit'''
+                  type: string
+                  example: 901987654-3
+                id_plan:
                   type: integer
                   example: 3
               type: object
       responses:
-        '201':
-          description: Creada
+        '200':
+          description: 'Información actualizada'
+        '400':
+          description: 'Error de validación o documento duplicado'
+    delete:
+      tags:
+        - 'Configuración - Empresas'
+      summary: 'Desactivar (eliminar lógicamente) una empresa'
+      operationId: deleteEmpresa
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID de la empresa a inactivar'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Empresa inactivada exitosamente'
+  /evaluaciones/generar:
+    post:
+      tags:
+        - 'Evaluaciones SG-SST'
+      summary: 'Generar evaluación automática (Filtro Res 0312)'
+      description: 'Calcula y asigna los ítems de la Resolución 0312 según nivel de riesgo y número de empleados.'
+      operationId: generarEvaluacionSGSST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - id_empresa
+                - cantidad_empleados
+                - clase_riesgo
+              properties:
+                id_empresa:
+                  type: integer
+                  example: 1
+                cantidad_empleados:
+                  type: integer
+                  example: 8
+                clase_riesgo:
+                  type: integer
+                  example: 1
+              type: object
+      responses:
+        '200':
+          description: 'Evaluación generada con éxito'
   '/index.php?table=guia_ruc_items':
     get:
       tags:
@@ -630,6 +717,7 @@ paths:
                   example: 'Acceso total al sistema'
                 id_empresa:
                   type: integer
+                  example: null
                   nullable: true
               type: object
       responses:
@@ -1365,21 +1453,6 @@ components:
           type: integer
           example: 1
       type: object
-    Empresa:
-      title: 'Empresa Cliente (Tenant)'
-      properties:
-        id:
-          type: integer
-        nombre:
-          type: string
-        identificacion:
-          properties:
-            tipo:
-              type: string
-            numero:
-              type: string
-          type: object
-      type: object
     GuiaRucItemSerializer:
       title: 'Serializador de Ítems Guía RUC'
       description: 'Transforma los datos de los ítems de la Guía RUC para la API'
@@ -1595,6 +1668,9 @@ components:
       type: object
 tags:
   -
+    name: 'Evaluaciones SG-SST'
+    description: 'Gestión de evaluaciones basadas en Resolución 0312'
+  -
     name: Auth
     description: 'Gestión de Tokens y Acceso'
   -
@@ -1607,8 +1683,8 @@ tags:
     name: 'Admin - Catálogos'
     description: 'Admin - Catálogos'
   -
-    name: 'Admin - Empresas'
-    description: 'Admin - Empresas'
+    name: 'Configuración - Empresas'
+    description: 'Configuración - Empresas'
   -
     name: 'Admin - Ítems Guía RUC'
     description: 'Admin - Ítems Guía RUC'

@@ -14,6 +14,30 @@ class EmpresaController extends GenericController {
         $this->model = new EmpresaModel($db);
     }
 
+    /**
+     * @OA\Get(
+     * path="/empresas",
+     * operationId="getEmpresasList",
+     * tags={"Configuración - Empresas"},
+     * summary="Listar empresas activas",
+     * description="Obtiene todas las empresas que se encuentran en estado activo (estado = 1), incluyendo el nombre de su plan.",
+     * @OA\Response(
+     * response=200,
+     * description="Operación exitosa",
+     * @OA\JsonContent(
+     * type="array",
+     * @OA\Items(
+     * @OA\Property(property="id_empresa", type="integer", example=1),
+     * @OA\Property(property="nombre_empresa", type="string", example="Mi Empresa S.A.S"),
+     * @OA\Property(property="numero_documento", type="string", example="900123456-7"),
+     * @OA\Property(property="id_plan", type="integer", example=3),
+     * @OA\Property(property="nombre_plan", type="string", example="Plan Premium"),
+     * @OA\Property(property="estado", type="integer", example=1)
+     * )
+     * )
+     * )
+     * )
+     */
     public function getAll() {
         $sql = "SELECT e.*, p.nombre_plan
                 FROM empresas e
@@ -27,6 +51,35 @@ class EmpresaController extends GenericController {
         return json_encode(EmpresaSerializer::toList($data));
     }
 
+    /**
+     * @OA\Get(
+     * path="/empresas/{id}",
+     * operationId="getEmpresaById",
+     * tags={"Configuración - Empresas"},
+     * summary="Obtener una empresa por ID",
+     * description="Devuelve los detalles de una única empresa especificada por su ID.",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * required=true,
+     * description="ID de la empresa",
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Operación exitosa",
+     * @OA\JsonContent(
+     * @OA\Property(property="id_empresa", type="integer", example=1),
+     * @OA\Property(property="nombre_empresa", type="string", example="Mi Empresa S.A.S"),
+     * @OA\Property(property="numero_documento", type="string", example="900123456-7"),
+     * @OA\Property(property="id_plan", type="integer", example=3),
+     * @OA\Property(property="nombre_plan", type="string", example="Plan Premium"),
+     * @OA\Property(property="estado", type="integer", example=1)
+     * )
+     * ),
+     * @OA\Response(response=404, description="Empresa no encontrada")
+     * )
+     */
     public function getOne($id) {
         $sql = "SELECT e.*, p.nombre_plan FROM empresas e
                 LEFT JOIN planes p ON e.id_plan = p.id_plan
@@ -43,6 +96,25 @@ class EmpresaController extends GenericController {
         return json_encode(EmpresaSerializer::toArray($data));
     }
 
+    /**
+     * @OA\Post(
+     * path="/empresas",
+     * operationId="createEmpresa",
+     * tags={"Configuración - Empresas"},
+     * summary="Crear nueva empresa",
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * required={"nombre_empresa", "numero_documento", "id_plan"},
+     * @OA\Property(property="nombre_empresa", type="string", example="Nueva Empresa S.A.S"),
+     * @OA\Property(property="numero_documento", type="string", example="901987654-3", description="También se acepta el campo 'nit'"),
+     * @OA\Property(property="id_plan", type="integer", example=2)
+     * )
+     * ),
+     * @OA\Response(response=201, description="Empresa registrada exitosamente"),
+     * @OA\Response(response=400, description="Error de validación o documento duplicado")
+     * )
+     */
     public function create($input) {
         try {
             // Compatibilidad: si llega "nit", lo convertimos a "numero_documento"
@@ -74,6 +146,31 @@ class EmpresaController extends GenericController {
         }
     }
 
+    /**
+     * @OA\Put(
+     * path="/empresas/{id}",
+     * operationId="updateEmpresa",
+     * tags={"Configuración - Empresas"},
+     * summary="Actualizar empresa existente",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * required=true,
+     * description="ID de la empresa a actualizar",
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * @OA\Property(property="nombre_empresa", type="string", example="Empresa Actualizada S.A.S"),
+     * @OA\Property(property="numero_documento", type="string", example="901987654-3", description="También se acepta 'nit'"),
+     * @OA\Property(property="id_plan", type="integer", example=3)
+     * )
+     * ),
+     * @OA\Response(response=200, description="Información actualizada"),
+     * @OA\Response(response=400, description="Error de validación o documento duplicado")
+     * )
+     */
     public function update($id, $input) {
         try {
             // Compatibilidad: si llega "nit", lo convertimos a "numero_documento"
@@ -96,6 +193,22 @@ class EmpresaController extends GenericController {
         }
     }
 
+    /**
+     * @OA\Delete(
+     * path="/empresas/{id}",
+     * operationId="deleteEmpresa",
+     * tags={"Configuración - Empresas"},
+     * summary="Desactivar (eliminar lógicamente) una empresa",
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * required=true,
+     * description="ID de la empresa a inactivar",
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(response=200, description="Empresa inactivada exitosamente")
+     * )
+     */
     public function delete($id) {
         $success = $this->model->update($id, ['estado' => 0]);
         return json_encode(["ok" => (bool)$success, "mensaje" => "Empresa inactivada"]);

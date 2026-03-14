@@ -11,6 +11,25 @@ class FormularioModel extends GenericModel
         parent::__construct($db, 'formularios');
     }
 
+    // --- AGREGA ESTE MÉTODO PARA SOLUCIONAR EL ERROR ---
+    public function install(): void
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS {$this->table} (
+            id_formulario INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(255) NOT NULL,
+            tipo_norma VARCHAR(100) NOT NULL,
+            estado TINYINT(1) DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+        try {
+            $this->db->exec($sql);
+        } catch (\PDOException $e) {
+            throw new \Exception("Error al instalar la tabla {$this->table}: " . $e->getMessage());
+        }
+    }
+
     public function listAll(): array
     {
         $sql = "SELECT id_formulario, nombre, tipo_norma, estado

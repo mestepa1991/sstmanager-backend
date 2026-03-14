@@ -20,7 +20,7 @@
     window.onload = function() {
         // Inicializar Swagger UI
         const ui = SwaggerUIBundle({
-            url: "./swagger.yaml", // <--- AQUÍ apunta a tu archivo generado
+            url: "./swagger.yaml?v=" + new Date().getTime(), 
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [

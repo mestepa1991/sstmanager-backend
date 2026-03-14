@@ -1,0 +1,2610 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SSTManager API",
+        "description": "Documentación oficial del sistema SSTManager",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/sstmanager-backend/public",
+            "description": "Servidor Local"
+        }
+    ],
+    "paths": {
+        "/index.php?table=categorias": {
+            "get": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Listar categorias activas (estado 1)",
+                "operationId": "5c55bca0b7b8a7664fd366be8722e737",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoriaResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Crear nueva categoria",
+                "description": "Solo requiere los campos manuales. El ID y Estado son automáticos.",
+                "operationId": "303a8326f9d32f8a49b91dbdb0da877a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Categoria creada exitosamente"
+                    }
+                }
+            }
+        },
+        "/index.php?table=categorias&id={id}": {
+            "put": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Actualizar categoria existente",
+                "operationId": "fe0bc8303803a0fbf578bc21754114b8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID autoincrementable de la categoría",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado con éxito"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Inactivar categoria (Borrado Lógico)",
+                "operationId": "5a541f5fa5b70e220b7f191097ed25b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado cambiado a 0"
+                    }
+                }
+            }
+        },
+        "/index.php?table=categoria_tipos": {
+            "get": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Listar todos los tipos activos",
+                "operationId": "85f1fc990ab920a98a67fcf4d5874db3",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoriaTipoResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Crear nuevo tipo de categoría",
+                "operationId": "38766335f1108aa4cb829967375dd0cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaTipoRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado con éxito"
+                    }
+                }
+            }
+        },
+        "/index.php?table=categoria_tipos&id={id}": {
+            "put": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Actualizar tipo de categoría",
+                "operationId": "9d584165b8224185c0c954b177f6e02a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaTipoRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Categorias"
+                ],
+                "summary": "Inactivar tipo (Borrado Lógico)",
+                "operationId": "e12931f43412891d2d69dda38b0be6de",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado cambiado a 0"
+                    }
+                }
+            }
+        },
+        "/index.php?table=categorias_guia_ruc": {
+            "get": {
+                "tags": [
+                    "Admin - Categorias Guia RUC"
+                ],
+                "summary": "Listar categorias de Guía RUC activas",
+                "operationId": "d58be55799239842d070ab626d07df77",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoriaGuiaRucResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Categorias Guia RUC"
+                ],
+                "summary": "Crear nueva categoria para Guía RUC",
+                "operationId": "8ec71060a80a97040767b6bd9177a12c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaGuiaRucRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado exitosamente"
+                    }
+                }
+            }
+        },
+        "/index.php?table=categorias_guia_ruc&id={id}": {
+            "put": {
+                "tags": [
+                    "Admin - Categorias Guia RUC"
+                ],
+                "summary": "Actualizar categoria de Guía RUC",
+                "operationId": "ae0bdacd332d9acead161facc7b36daf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaGuiaRucRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado con éxito"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Categorias Guia RUC"
+                ],
+                "summary": "Inactivar categoria (Borrado Lógico)",
+                "operationId": "177e87085c034f039668385d41110e37",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registro inactivado"
+                    }
+                }
+            }
+        },
+        "/index.php?table=ciclos_phva": {
+            "get": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Listar todos los ciclos PHVA",
+                "description": "Devuelve la lista para llenar el select 'Ciclo al PHVA' del formulario.",
+                "operationId": "d4111d3c478f9b5c2562dafef2a4a4ee",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ciclo"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno"
+                    }
+                }
+            }
+        },
+        "/index.php?table=ciclos_phva&id={id}": {
+            "get": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Obtener un ciclo por ID",
+                "operationId": "cf57fd65941478e02cde6c5b3a4baa85",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID del ciclo a buscar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ciclo encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ciclo"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        },
+        "/empresas": {
+            "get": {
+                "tags": [
+                    "Configuración - Empresas"
+                ],
+                "summary": "Listar empresas activas",
+                "description": "Obtiene todas las empresas que se encuentran en estado activo (estado = 1), incluyendo el nombre de su plan.",
+                "operationId": "getEmpresasList",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id_empresa": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "nombre_empresa": {
+                                                "type": "string",
+                                                "example": "Mi Empresa S.A.S"
+                                            },
+                                            "numero_documento": {
+                                                "type": "string",
+                                                "example": "900123456-7"
+                                            },
+                                            "id_plan": {
+                                                "type": "integer",
+                                                "example": 3
+                                            },
+                                            "nombre_plan": {
+                                                "type": "string",
+                                                "example": "Plan Premium"
+                                            },
+                                            "estado": {
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Configuración - Empresas"
+                ],
+                "summary": "Crear nueva empresa",
+                "operationId": "createEmpresa",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_empresa",
+                                    "numero_documento",
+                                    "id_plan"
+                                ],
+                                "properties": {
+                                    "nombre_empresa": {
+                                        "type": "string",
+                                        "example": "Nueva Empresa S.A.S"
+                                    },
+                                    "numero_documento": {
+                                        "description": "También se acepta el campo 'nit'",
+                                        "type": "string",
+                                        "example": "901987654-3"
+                                    },
+                                    "id_plan": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Empresa registrada exitosamente"
+                    },
+                    "400": {
+                        "description": "Error de validación o documento duplicado"
+                    }
+                }
+            }
+        },
+        "/empresas/{id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Empresas"
+                ],
+                "summary": "Obtener una empresa por ID",
+                "description": "Devuelve los detalles de una única empresa especificada por su ID.",
+                "operationId": "getEmpresaById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la empresa",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id_empresa": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "nombre_empresa": {
+                                            "type": "string",
+                                            "example": "Mi Empresa S.A.S"
+                                        },
+                                        "numero_documento": {
+                                            "type": "string",
+                                            "example": "900123456-7"
+                                        },
+                                        "id_plan": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "nombre_plan": {
+                                            "type": "string",
+                                            "example": "Plan Premium"
+                                        },
+                                        "estado": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Empresa no encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Configuración - Empresas"
+                ],
+                "summary": "Actualizar empresa existente",
+                "operationId": "updateEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la empresa a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_empresa": {
+                                        "type": "string",
+                                        "example": "Empresa Actualizada S.A.S"
+                                    },
+                                    "numero_documento": {
+                                        "description": "También se acepta 'nit'",
+                                        "type": "string",
+                                        "example": "901987654-3"
+                                    },
+                                    "id_plan": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Información actualizada"
+                    },
+                    "400": {
+                        "description": "Error de validación o documento duplicado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Configuración - Empresas"
+                ],
+                "summary": "Desactivar (eliminar lógicamente) una empresa",
+                "operationId": "deleteEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la empresa a inactivar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa inactivada exitosamente"
+                    }
+                }
+            }
+        },
+        "/evaluaciones/generar": {
+            "post": {
+                "tags": [
+                    "Evaluaciones SG-SST"
+                ],
+                "summary": "Generar evaluación automática (Filtro Res 0312)",
+                "description": "Calcula y asigna los ítems de la Resolución 0312 según nivel de riesgo y número de empleados.",
+                "operationId": "generarEvaluacionSGSST",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_empresa",
+                                    "cantidad_empleados",
+                                    "clase_riesgo"
+                                ],
+                                "properties": {
+                                    "id_empresa": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cantidad_empleados": {
+                                        "type": "integer",
+                                        "example": 8
+                                    },
+                                    "clase_riesgo": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evaluación generada con éxito"
+                    }
+                }
+            }
+        },
+        "/index.php?table=guia_ruc_items": {
+            "get": {
+                "tags": [
+                    "Admin - Ítems Guía RUC"
+                ],
+                "summary": "Listar todos los ítems con su categoría",
+                "operationId": "826308ad9316d004d626d707d2b1ef25",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GuiaRucItemSerializer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Ítems Guía RUC"
+                ],
+                "summary": "Crear nuevo ítem de la Guía RUC",
+                "operationId": "db8c6c962579f74b7c3b1dc8885a2a19",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GuiaRucItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado exitosamente"
+                    }
+                }
+            }
+        },
+        "/index.php?table=guia_ruc_items&id={id}": {
+            "put": {
+                "tags": [
+                    "Admin - Ítems Guía RUC"
+                ],
+                "summary": "Actualizar ítem de Guía RUC",
+                "operationId": "3a8e308a14dc7bda94d56e6d73d72e5b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GuiaRucItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado con éxito"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Ítems Guía RUC"
+                ],
+                "summary": "Inactivar ítem (Borrado Lógico)",
+                "operationId": "9d436a08b5e0b8fd2a64eb558f592e49",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ítem inactivado"
+                    }
+                }
+            }
+        },
+        "/item": {
+            "get": {
+                "tags": [
+                    "Configuración - Items"
+                ],
+                "summary": "Listar items de estándares",
+                "description": "Obtiene todos los items o filtra por una categoría específica.",
+                "operationId": "getItemsList",
+                "parameters": [
+                    {
+                        "name": "id_categoria",
+                        "in": "query",
+                        "description": "ID de la tabla padre (categoria_tipos) para filtrar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 15
+                                            },
+                                            "idCategoria": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "itemEstandar": {
+                                                "type": "string",
+                                                "example": "1.1.2"
+                                            },
+                                            "item": {
+                                                "type": "string",
+                                                "example": "Pago de Seguridad Social"
+                                            },
+                                            "criterio": {
+                                                "type": "string",
+                                                "example": "Verificar planillas"
+                                            },
+                                            "modoVerificacion": {
+                                                "type": "string",
+                                                "example": "Documental"
+                                            },
+                                            "estado": {
+                                                "type": "string",
+                                                "example": "Activo"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Configuración - Items"
+                ],
+                "summary": "Crear nuevo item",
+                "operationId": "createItem",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_categorias",
+                                    "item"
+                                ],
+                                "properties": {
+                                    "id_categorias": {
+                                        "description": "ID del Padre",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "item_estandar": {
+                                        "type": "string",
+                                        "example": "1.1.2"
+                                    },
+                                    "item": {
+                                        "type": "string",
+                                        "example": "Nombre del requisito"
+                                    },
+                                    "criterio": {
+                                        "type": "string",
+                                        "example": "Criterio a cumplir"
+                                    },
+                                    "modo_verificacion": {
+                                        "type": "string",
+                                        "example": "Documental"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Item creado correctamente"
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/item/{id}": {
+            "put": {
+                "tags": [
+                    "Configuración - Items"
+                ],
+                "summary": "Actualizar item existente",
+                "operationId": "updateItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del item (id_detalle)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "item_estandar": {
+                                        "type": "string"
+                                    },
+                                    "item": {
+                                        "type": "string"
+                                    },
+                                    "criterio": {
+                                        "type": "string"
+                                    },
+                                    "modo_verificacion": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "Activo"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado"
+                    },
+                    "400": {
+                        "description": "Error al actualizar"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Configuración - Items"
+                ],
+                "summary": "Desactivar (eliminar lógicamente) un item",
+                "operationId": "deleteItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item desactivado"
+                    }
+                }
+            }
+        },
+        "/modulos": {
+            "get": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Listar módulos y funciones",
+                "operationId": "getModulosList",
+                "parameters": [
+                    {
+                        "name": "todos",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Modulo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Crear módulo o función",
+                "operationId": "createModulo",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_modulo"
+                                ],
+                                "properties": {
+                                    "nombre_modulo": {
+                                        "type": "string",
+                                        "example": "Inventarios"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Control de stock"
+                                    },
+                                    "icono": {
+                                        "type": "string",
+                                        "example": "fas fa-box"
+                                    },
+                                    "id_padre": {
+                                        "type": "integer",
+                                        "example": 0,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    }
+                }
+            }
+        },
+        "/modulos/{id}": {
+            "put": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Actualizar módulo",
+                "operationId": "updateModulo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_modulo": {
+                                        "type": "string"
+                                    },
+                                    "id_padre": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "estado": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado"
+                    }
+                }
+            }
+        },
+        "/perfiles": {
+            "get": {
+                "tags": [
+                    "Seguridad - Perfiles"
+                ],
+                "summary": "Listar perfiles de seguridad",
+                "operationId": "getPerfilesListCustom",
+                "parameters": [
+                    {
+                        "name": "id_empresa",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id_perfil": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "nombre_perfil": {
+                                                "type": "string",
+                                                "example": "Administrador"
+                                            },
+                                            "descripcion": {
+                                                "type": "string",
+                                                "example": "Acceso total"
+                                            },
+                                            "estado": {
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Seguridad - Perfiles"
+                ],
+                "summary": "Crear nuevo perfil",
+                "operationId": "createPerfilCustom",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_perfil"
+                                ],
+                                "properties": {
+                                    "nombre_perfil": {
+                                        "type": "string",
+                                        "example": "Administrador"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Acceso total al sistema"
+                                    },
+                                    "id_empresa": {
+                                        "type": "integer",
+                                        "example": null,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/perfiles/{id}": {
+            "put": {
+                "tags": [
+                    "Seguridad - Perfiles"
+                ],
+                "summary": "Actualizar perfil",
+                "operationId": "updatePerfilCustom",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_perfil": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado"
+                    },
+                    "400": {
+                        "description": "Error en actualización"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Seguridad - Perfiles"
+                ],
+                "summary": "Desactivar perfil",
+                "operationId": "deletePerfilCustom",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Desactivado"
+                    }
+                }
+            }
+        },
+        "/perfiles/permisos/{id}": {
+            "get": {
+                "tags": [
+                    "Seguridad - Permisos"
+                ],
+                "summary": "Listar matriz de permisos",
+                "operationId": "getPermisosPerfil",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exitoso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Seguridad - Permisos"
+                ],
+                "summary": "Guardar matriz de permisos",
+                "operationId": "savePermisosPerfil",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Permiso"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permisos guardados"
+                    }
+                }
+            }
+        },
+        "/perfiles/permisos/{id}/check-all": {
+            "get": {
+                "tags": [
+                    "Seguridad - Permisos"
+                ],
+                "summary": "Obtener todos los permisos formateados para validación inicial",
+                "operationId": "getAllAccess",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Perfil",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matriz de permisos optimizada"
+                    }
+                }
+            }
+        },
+        "/personal_sst/empresa/{id_empresa}": {
+            "get": {
+                "tags": [
+                    "Admin - Personal SST"
+                ],
+                "summary": "Obtener personal SST filtrando estrictamente por campo id_empresa",
+                "operationId": "e3bfe4f6856b227ede143b2a050f60fb",
+                "parameters": [
+                    {
+                        "name": "id_empresa",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del personal SST"
+                    }
+                }
+            }
+        },
+        "/personal_sst": {
+            "get": {
+                "tags": [
+                    "Admin - Personal SST"
+                ],
+                "summary": "Listar todo el personal SST",
+                "operationId": "0cf4d33f5ac75358789bb5bb93e9a1f0",
+                "responses": {
+                    "200": {
+                        "description": "Lista de personal con su empresa asociada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PersonalSst"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Personal SST"
+                ],
+                "summary": "Asociar nuevo profesional SST a una empresa",
+                "operationId": "3c8912f4b14df1a1696b2b4824acf1a8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_empresa",
+                                    "proyecto_rige",
+                                    "nombre_profesional",
+                                    "correo_sst"
+                                ],
+                                "properties": {
+                                    "id_empresa": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "proyecto_rige": {
+                                        "type": "string",
+                                        "example": "IMPLEMENTACIÓN ESTÁNDARES MÍNIMOS"
+                                    },
+                                    "nombre_profesional": {
+                                        "type": "string",
+                                        "example": "JUAN SEBASTIÁN PINEDA"
+                                    },
+                                    "correo_sst": {
+                                        "type": "string",
+                                        "example": "profesional.sst@ejemplo.com"
+                                    },
+                                    "telefono_sst": {
+                                        "type": "string",
+                                        "example": "315 888 9900"
+                                    },
+                                    "firma_sst_url": {
+                                        "type": "string",
+                                        "example": "JS_PINEDA_SIGN"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Personal asociado exitosamente"
+                    }
+                }
+            }
+        },
+        "/personal_sst/{id}": {
+            "put": {
+                "tags": [
+                    "Admin - Personal SST"
+                ],
+                "summary": "Actualizar datos del personal SST",
+                "operationId": "762d023ac0762051a6083b4651d29bf1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "proyecto_rige": {
+                                        "type": "string"
+                                    },
+                                    "nombre_profesional": {
+                                        "type": "string"
+                                    },
+                                    "correo_sst": {
+                                        "type": "string"
+                                    },
+                                    "telefono_sst": {
+                                        "type": "string"
+                                    },
+                                    "firma_sst_url": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos actualizados"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Personal SST"
+                ],
+                "summary": "Eliminar asociación de personal",
+                "operationId": "fb8fdec3340be0fbc0e75b7763759bde",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asociación eliminada"
+                    }
+                }
+            }
+        },
+        "/planes": {
+            "get": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Listar todos los planes",
+                "operationId": "getPlanesList",
+                "responses": {
+                    "200": {
+                        "description": "Exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Plan"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Crear un nuevo plan comercial",
+                "operationId": "createPlan",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_plan"
+                                ],
+                                "properties": {
+                                    "nombre_plan": {
+                                        "type": "string",
+                                        "example": "Plan Pro"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Acceso a módulos avanzados"
+                                    },
+                                    "limite_usuarios": {
+                                        "type": "integer",
+                                        "example": 20
+                                    },
+                                    "precio_mensual": {
+                                        "type": "number",
+                                        "example": 59.9
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/planes/{id}": {
+            "put": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Actualizar plan",
+                "operationId": "updatePlan",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_plan": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado"
+                    },
+                    "400": {
+                        "description": "Error en actualización"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Desactivar plan",
+                "operationId": "deletePlan",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Desactivado"
+                    }
+                }
+            }
+        },
+        "/planes/permisos/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Listar matriz de accesos por plan",
+                "operationId": "getAccesosPlan",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exitoso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Planes"
+                ],
+                "summary": "Guardar matriz de accesos del plan (Sincronización completa)",
+                "operationId": "saveAccesosPlan",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PlanAcceso"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Accesos sincronizados"
+                    }
+                }
+            }
+        },
+        "/tipo-empresa": {
+            "get": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Listar tipos de empresa configurados",
+                "operationId": "getTipoEmpresaList",
+                "responses": {
+                    "200": {
+                        "description": "Exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TipoEmpresa"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Crear nueva configuración de tipo de empresa",
+                "operationId": "createTipoEmpresa",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tamano_empresa",
+                                    "sector",
+                                    "empleados_desde",
+                                    "empleados_hasta"
+                                ],
+                                "properties": {
+                                    "tamano_empresa": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Micro",
+                                            "Pequeña",
+                                            "Mediana",
+                                            "Grande"
+                                        ]
+                                    },
+                                    "sector": {
+                                        "description": "Campo APLICACIÓN en formulario",
+                                        "type": "string"
+                                    },
+                                    "cantidad_sede": {
+                                        "description": "Campo CANTIDAD POR SEDE",
+                                        "type": "integer"
+                                    },
+                                    "empleados_desde": {
+                                        "type": "integer"
+                                    },
+                                    "empleados_hasta": {
+                                        "type": "integer"
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    }
+                }
+            }
+        },
+        "/tipo-empresa/{id}": {
+            "put": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Actualizar una configuración de tipo de empresa",
+                "operationId": "updateTipoEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la configuración",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TipoEmpresa"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Catálogos"
+                ],
+                "summary": "Desactivar (borrado lógico) un tipo de empresa",
+                "operationId": "deleteTipoEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID a desactivar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Desactivado con éxito"
+                    }
+                }
+            }
+        },
+        "/index.php?action=login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Obtener Token JWT",
+                "description": "Envía email y contraseña para recibir un token de acceso.",
+                "operationId": "910523e1273abe562f05556dd91d1cec",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@sst.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token generado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJK..."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/Usuario"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas"
+                    }
+                }
+            }
+        },
+        "/index.php?table=usuarios": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Listar usuarios con filtros de empresa",
+                "operationId": "f98178c21d4e9e676798b8c445ebd08e",
+                "parameters": [
+                    {
+                        "name": "id_empresa",
+                        "in": "query",
+                        "description": "Filtrar por empresa (opcional para Master)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de usuarios",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Usuario"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Crear usuario",
+                "operationId": "96c727d02a352e221c245a3430cfc3c7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Usuario"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado con éxito"
+                    }
+                }
+            }
+        },
+        "/index.php?table=usuarios&id={id}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Obtener un usuario por ID",
+                "operationId": "e6fe7eaba59ce6b15b5b8b83b33daad4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del usuario",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Usuario"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reemplazar usuario (Actualización Completa)",
+                "operationId": "c69349d1a423980f15bfec6fd8b10415",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Usuario"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado correctamente"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Inactivar Usuario",
+                "operationId": "e4755b8d3ea3a46193fe98cf696a76e2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado cambiado a inactivo"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Actualización Parcial (Solo campos enviados)",
+                "operationId": "1aae2fd58bd6d4634240ecb3956b799e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "nuevo@correo.com"
+                                    },
+                                    "nombre": {
+                                        "type": "string"
+                                    },
+                                    "id_perfil": {
+                                        "type": "integer"
+                                    },
+                                    "estado": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Campo actualizado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CategoriaRequest": {
+                "title": "Cuerpo de Categoria",
+                "description": "Campos necesarios para crear o actualizar una categoría (Excluye campos automáticos)",
+                "properties": {
+                    "descripcion": {
+                        "type": "string",
+                        "example": "RECURSOS FINANCIEROS"
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaResponse": {
+                "title": "Respuesta de Categoria",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "RECURSOS FINANCIEROS"
+                    },
+                    "estado": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaTipoRequest": {
+                "title": "Cuerpo de Tipo de Categoría",
+                "properties": {
+                    "categoria_id": {
+                        "description": "ID de la categoría padre",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "RECURSO HUMANO"
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaTipoResponse": {
+                "title": "Respuesta de Tipo de Categoría",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "categoria_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "RECURSO HUMANO"
+                    },
+                    "estado": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaGuiaRucRequest": {
+                "title": "Cuerpo de Categoria Guía RUC",
+                "properties": {
+                    "codigo": {
+                        "type": "string",
+                        "example": "CAT-01"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "LIDERAZGO Y COMPROMISO"
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaGuiaRucResponse": {
+                "title": "Respuesta de Categoria Guía RUC",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "codigo": {
+                        "type": "string",
+                        "example": "CAT-01"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "LIDERAZGO Y COMPROMISO"
+                    },
+                    "estado": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Ciclo": {
+                "title": "Ciclo PHVA",
+                "description": "Modelo de los pasos del ciclo PHVA",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Planear"
+                    }
+                },
+                "type": "object"
+            },
+            "GuiaRucItemRequest": {
+                "title": "Cuerpo de Ítem Guía RUC",
+                "properties": {
+                    "id_categoria": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "num_item": {
+                        "type": "string",
+                        "example": "1.1.1"
+                    },
+                    "requisito": {
+                        "type": "string",
+                        "example": "Política SSTA"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Descripción detallada..."
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "example": "Notas adicionales"
+                    }
+                },
+                "type": "object"
+            },
+            "GuiaRucItemModel": {
+                "title": "Modelo de Ítems Guía RUC",
+                "description": "Estructura de la tabla de ítems de la Guía RUC con relación a categorías"
+            },
+            "CategoriaGuiaRucSerializer": {
+                "title": "Serializador de Categoría Guía RUC",
+                "description": "Transforma los datos de la tabla categorias_guia_ruc para la API",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "codigo": {
+                        "type": "string",
+                        "example": "CAT-01"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "LIDERAZGO Y COMPROMISO"
+                    },
+                    "estado": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "GuiaRucItemSerializer": {
+                "title": "Serializador de Ítems Guía RUC",
+                "description": "Transforma los datos de los ítems de la Guía RUC para la API",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "id_categoria": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "categoria_info": {
+                        "properties": {
+                            "codigo": {
+                                "type": "string",
+                                "example": "CAT-01"
+                            },
+                            "nombre": {
+                                "type": "string",
+                                "example": "LIDERAZGO Y COMPROMISO"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "num_item": {
+                        "type": "string",
+                        "example": "1.1.1"
+                    },
+                    "requisito": {
+                        "type": "string",
+                        "example": "Política de SSTA"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "La empresa debe contar con una política..."
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "example": "Pendiente revisión anual"
+                    },
+                    "estado": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Modulo": {
+                "title": "Módulo del Sistema",
+                "description": "Esquema para la gestión de módulos y funciones (Jerarquía)",
+                "properties": {
+                    "id_modulo": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "id_padre": {
+                        "description": "ID del padre. Si es NULL es un Módulo principal.",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "nombre_modulo": {
+                        "type": "string",
+                        "example": "Usuarios"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Gestión de acceso"
+                    },
+                    "icono": {
+                        "type": "string",
+                        "example": "fas fa-users"
+                    },
+                    "estado": {
+                        "description": "1: Activo, 0: Inactivo",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipo_elemento": {
+                        "description": "Calculado: Modulo o Funcion",
+                        "type": "string",
+                        "example": "Modulo"
+                    }
+                },
+                "type": "object"
+            },
+            "Perfil": {
+                "title": "Perfil de Usuario",
+                "properties": {
+                    "id_perfil": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre_perfil": {
+                        "type": "string",
+                        "example": "Administrador"
+                    }
+                },
+                "type": "object"
+            },
+            "Permiso": {
+                "title": "Matriz de Permisos",
+                "properties": {
+                    "id_modulo": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "modulo": {
+                        "type": "string",
+                        "example": "Ventas"
+                    },
+                    "ver": {
+                        "description": "1=Si, 0=No",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "crear": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "editar": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "eliminar": {
+                        "type": "integer",
+                        "example": 0
+                    }
+                },
+                "type": "object"
+            },
+            "PersonalSst": {
+                "title": "Personal SST Asociado"
+            },
+            "Plan": {
+                "title": "Plan de Suscripción",
+                "properties": {
+                    "id_plan": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre_plan": {
+                        "type": "string",
+                        "example": "Profesional"
+                    }
+                },
+                "type": "object"
+            },
+            "PlanAcceso": {
+                "title": "Matriz de Accesos por Plan",
+                "properties": {
+                    "id_plan": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "id_modulo": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "ver": {
+                        "description": "1=Si, 0=No",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "TipoEmpresa": {
+                "title": "Configuración de Tipo de Empresa",
+                "description": "Esquema para la clasificación de empresas por tamaño y rango de empleados",
+                "properties": {
+                    "id_config": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tamano_empresa": {
+                        "type": "string",
+                        "enum": [
+                            "Micro",
+                            "Pequeña",
+                            "Mediana",
+                            "Grande"
+                        ],
+                        "example": "Micro"
+                    },
+                    "empleados_desde": {
+                        "description": "Límite inferior de empleados",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "empleados_hasta": {
+                        "description": "Límite superior de empleados",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "estado": {
+                        "description": "1: Activo, 0: Inactivo",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "example": "2023-10-27 10:00:00"
+                    }
+                },
+                "type": "object"
+            },
+            "Usuario": {
+                "title": "Modelo de Usuario",
+                "description": "Esquema que representa a un usuario dentro del ecosistema Multi-tenant",
+                "required": [
+                    "nombre",
+                    "apellido",
+                    "email",
+                    "tipo_documento",
+                    "numero_documento",
+                    "rol",
+                    "id_perfil"
+                ],
+                "properties": {
+                    "id_usuario": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Juan"
+                    },
+                    "apellido": {
+                        "type": "string",
+                        "example": "Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan.perez@sst.com"
+                    },
+                    "tipo_documento": {
+                        "type": "string",
+                        "example": "CC"
+                    },
+                    "numero_documento": {
+                        "type": "string",
+                        "example": "123456789"
+                    },
+                    "rol": {
+                        "type": "string",
+                        "enum": [
+                            "master",
+                            "administrador-cliente",
+                            "usuario",
+                            "soporte"
+                        ],
+                        "example": "administrador-cliente"
+                    },
+                    "id_empresa": {
+                        "description": "ID de la empresa (null si es master o soporte)",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "id_perfil": {
+                        "description": "ID del perfil de permisos asociado",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "password": {
+                        "description": "Contraseña (solo para envío en POST/PUT)",
+                        "type": "string",
+                        "writeOnly": true,
+                        "example": "password123"
+                    },
+                    "estado": {
+                        "description": "1: Activo, 0: Inactivo",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Evaluaciones SG-SST",
+            "description": "Gestión de evaluaciones basadas en Resolución 0312"
+        },
+        {
+            "name": "Auth",
+            "description": "Gestión de Tokens y Acceso"
+        },
+        {
+            "name": "Admin - Categorias",
+            "description": "Admin - Categorias"
+        },
+        {
+            "name": "Admin - Categorias Guia RUC",
+            "description": "Admin - Categorias Guia RUC"
+        },
+        {
+            "name": "Admin - Catálogos",
+            "description": "Admin - Catálogos"
+        },
+        {
+            "name": "Configuración - Empresas",
+            "description": "Configuración - Empresas"
+        },
+        {
+            "name": "Admin - Ítems Guía RUC",
+            "description": "Admin - Ítems Guía RUC"
+        },
+        {
+            "name": "Configuración - Items",
+            "description": "Configuración - Items"
+        },
+        {
+            "name": "Seguridad - Perfiles",
+            "description": "Seguridad - Perfiles"
+        },
+        {
+            "name": "Seguridad - Permisos",
+            "description": "Seguridad - Permisos"
+        },
+        {
+            "name": "Admin - Personal SST",
+            "description": "Admin - Personal SST"
+        },
+        {
+            "name": "Admin - Planes",
+            "description": "Admin - Planes"
+        }
+    ]
+}

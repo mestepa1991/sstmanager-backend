@@ -9,6 +9,7 @@ use App\Controllers\Admin\PlanModulosController;
 use App\Controllers\Admin\TipoempresaController;
 use App\Controllers\Admin\CalificacionController;
 use App\Controllers\Admin\FormularioController;
+use App\Controllers\Admin\EvaluacionController;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -187,6 +188,19 @@ if ($table === 'formularios') {
             'DELETE' => $controller->delete($id),
             default  => throw new Exception("Método no soportado para calificaciones", 405)
         };
+        exit;
+    }
+
+    // ---------- EVALUACIONES ----------
+    if ($table === 'evaluaciones') {
+
+        $controller = new EvaluacionController($db);
+
+        echo match ($method) {
+            'POST' => $controller->create($input),
+            default => throw new Exception("Método no soportado para evaluaciones", 405)
+        };
+
         exit;
     }
 

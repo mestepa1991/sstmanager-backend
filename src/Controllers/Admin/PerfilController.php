@@ -56,7 +56,7 @@ class PerfilController extends GenericController {
         return json_encode(PerfilSerializer::toList($data));
     }
 
-    /** * @OA\Post(
+   /** * @OA\Post(
      * path="/perfiles",
      * operationId="createPerfilCustom",
      * tags={"Seguridad - Perfiles"},
@@ -67,7 +67,7 @@ class PerfilController extends GenericController {
      * required={"nombre_perfil"},
      * @OA\Property(property="nombre_perfil", type="string", example="Administrador"),
      * @OA\Property(property="descripcion", type="string", example="Acceso total al sistema"),
-     * @OA\Property(property="id_empresa", type="integer", nullable=true)
+     * @OA\Property(property="id_empresa", type="integer", nullable=true, example=null)
      * )
      * ),
      * @OA\Response(response=201, description="Creado"),
@@ -76,12 +76,27 @@ class PerfilController extends GenericController {
      */
     public function create($input) {
         try {
+            // 1. Validación de campos obligatorios
             if (empty($input['nombre_perfil'])) {
                 throw new Exception("El nombre del perfil es obligatorio");
             }
 
-            $id = $this->model->create($input);
-            return json_encode(["id" => $id, "mensaje" => "Registrado correctamente"]);
+            // 2. Preparar datos: permitir id_empresa nulo
+            // Si id_empresa no viene, es vacío o es la cadena "null", se guarda como null real
+            $data = [
+                "nombre_perfil" => $input['nombre_perfil'],
+                "descripcion"   => $input['descripcion'] ?? null,
+                "id_empresa"    => (!empty($input['id_empresa'])) ? (int)$input['id_empresa'] : null
+            ];
+
+            // 3. Ejecutar creación en el modelo
+            $id = $this->model->create($data);
+
+            http_response_code(201);
+            return json_encode([
+                "id" => $id, 
+                "mensaje" => "Registrado correctamente"
+            ]);
 
         } catch (Exception $e) {
             http_response_code(400);

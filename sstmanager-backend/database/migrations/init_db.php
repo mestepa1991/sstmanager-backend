@@ -22,7 +22,11 @@ use App\Models\Admin\PlanmodulosModel;
 use App\Models\Admin\TipoempresaModel;
 use App\Models\Admin\CategoriaguiarucModel;
 use App\Models\Admin\GuiaRucItemModel;
-use App\Models\Admin\PersonalSstModel; // <--- 1. NUEVA IMPORTACIÓN
+use App\Models\Admin\PersonalSstModel;
+use App\Models\Admin\FormularioModel;
+// 1. NUEVAS IMPORTACIONES PARA EVALUACIONES
+use App\Models\Admin\EvaluacionModel;
+use App\Models\Admin\EvaluacionDetalleModel;
 
 $host = 'localhost';
 $user = 'root';
@@ -56,7 +60,7 @@ try {
         new ModuloModel($db),
         new PlanModel($db),
         new EmpresaModel($db),
-        new PersonalSstModel($db), // <--- 2. AGREGADO AL ARRAY (Después de Empresa por la FK)
+        new PersonalSstModel($db),
         new PerfilModel($db),
         new UsuarioModel($db),
         new CicloModel($db),
@@ -67,7 +71,11 @@ try {
         new PlanmodulosModel($db),
         new TipoempresaModel($db),
         new CategoriaguiarucModel($db),
-        new GuiaRucItemModel($db)
+        new GuiaRucItemModel($db),
+        new FormularioModel($db),
+        // 2. AGREGADOS AL ARRAY DE MIGRACIÓN
+        new EvaluacionModel($db),
+        new EvaluacionDetalleModel($db)
     ];
 
     foreach ($modelos as $index => $modelo) {

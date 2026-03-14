@@ -35,7 +35,8 @@ class EmpresaModel extends GenericModel {
             "cant_directos"     => "INT DEFAULT 0",
             "cant_contratistas" => "INT DEFAULT 0",
             "cant_aprendices"   => "INT DEFAULT 0",
-            "cant_brigadistas"  => "INT DEFAULT 0"
+            "cant_brigadistas"  => "INT DEFAULT 0",
+            "nivel_riesgo"      => "ENUM('I', 'II', 'III', 'IV', 'V') DEFAULT 'I' AFTER cant_brigadistas"
         ];
 
         foreach ($nuevosCampos as $columna => $definicion) {
