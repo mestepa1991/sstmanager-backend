@@ -1372,6 +1372,54 @@ paths:
       responses:
         '200':
           description: 'Campo actualizado'
+  '/formularios-dinamicos/empresa/{id_empresa}/item/{id_item}':
+    get:
+      tags:
+        - 'SST - Formularios Dinámicos'
+      summary: 'Obtener formulario dinámico por empresa e ítem'
+      operationId: 6fde2c6107ff4b4f9bacbd6ba23a34d6
+      parameters:
+        -
+          name: id_empresa
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: id_item
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Formulario cargado con éxito'
+  /formularios-dinamicos/guardar:
+    post:
+      tags:
+        - 'SST - Formularios Dinámicos'
+      summary: 'Guardar personalización de formulario'
+      operationId: 866b06bc38e5f33a07fef665ce6db540
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - id_empresa
+                - id_item_sst
+                - datos
+              properties:
+                id_empresa:
+                  type: integer
+                id_item_sst:
+                  type: integer
+                datos:
+                  type: object
+              type: object
+      responses:
+        '200':
+          description: 'Guardado exitoso'
 components:
   schemas:
     CategoriaRequest:
@@ -1718,6 +1766,9 @@ tags:
   -
     name: Auth
     description: 'Gestión de Tokens y Acceso'
+  -
+    name: 'SST - Formularios Dinámicos'
+    description: 'Gestión de formatos dinámicos por ítem'
   -
     name: 'Admin - Categorias'
     description: 'Admin - Categorias'

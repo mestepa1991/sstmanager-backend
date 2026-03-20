@@ -10,6 +10,7 @@ use App\Controllers\Admin\TipoempresaController;
 use App\Controllers\Admin\CalificacionController;
 use App\Controllers\Admin\FormularioController;
 use App\Controllers\Admin\EvaluacionController;
+use App\Controllers\Sst\FormularioDinamicoController;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -205,7 +206,31 @@ if ($table === 'formularios') {
 
         exit;
     }
+// ---------- FORMULARIOS DINÁMICOS (POR ÍTEM SST) ----------
+if ($table === 'formularios-dinamicos') {
+    $controller = new FormularioDinamicoController($db);
+    
+    // Nueva lógica para capturar id_empresa e id_item de la URL
+    if ($method === 'GET' && $action === 'empresa') {
+        // Segmentos: [0]formularios-dinamicos, [1]empresa, [2]{id_empresa}, [3]item, [4]{id_item}
+        $idEmpresa = $pathSegments[2] ?? null;
+        $idItem = $pathSegments[4] ?? null;
 
+        if (!$idItem) throw new Exception("ID de ítem requerido", 400);
+        
+        echo $controller->getPorEmpresa($idEmpresa, $idItem);
+        exit;
+    }
+
+    // Mantener soporte para llamadas directas por ID si es necesario
+    echo match ($method) {
+        'GET'    => $id ? $controller->getOne($id) : throw new Exception("ID de ítem requerido", 400),
+        'POST'   => $controller->save($input),
+        'PUT'    => $controller->save($input),
+        default  => throw new Exception("Método no soportado", 405)
+    };
+    exit;
+}
     // ---------- FALLBACK ----------
     $controller = new App\Controllers\GenericController($db, $table);
     echo $controller->handleRequest($method, $id, $input);

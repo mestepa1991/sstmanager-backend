@@ -23,6 +23,8 @@ class GenericModel {
             'item'         => 'id_detalle',
             'empresas'     => 'id_empresa',
             'personal_sst' => 'id_personal_sst', // Confirmado con guion bajo
+            'sst_formularios_personalizados' => 'id_personalizacion',
+            'sst_formularios_plantillas'     => 'id_plantilla',     
         ];
 
         $this->primaryKey = $pkMap[$this->table] ?? 'id';

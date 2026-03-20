@@ -27,6 +27,8 @@ use App\Models\Admin\FormularioModel;
 // 1. NUEVAS IMPORTACIONES PARA EVALUACIONES
 use App\Models\Admin\EvaluacionModel;
 use App\Models\Admin\EvaluacionDetalleModel;
+use App\Models\Sst\FormularioDinamicoModel;
+use App\Models\Sst\PlantillaSstModel;
 
 $host = 'localhost';
 $user = 'root';
@@ -75,7 +77,9 @@ try {
         new FormularioModel($db),
         // 2. AGREGADOS AL ARRAY DE MIGRACIÓN
         new EvaluacionModel($db),
-        new EvaluacionDetalleModel($db)
+        new EvaluacionDetalleModel($db),
+        new FormularioDinamicoModel($db),
+        new PlantillaSstModel($db)
     ];
 
     foreach ($modelos as $index => $modelo) {
